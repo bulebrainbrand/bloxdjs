@@ -15,6 +15,7 @@ import generate from "@babel/generator";
 import { pack } from "./packer";
 import { getFileInfos } from "./getFileInfo";
 import path from "node:path";
+import { resolveImportPathAsts } from "./resolveTsconfigPath";
 export const build = async (
   config: StrictConfig,
   fs: FullFsClient,
@@ -30,12 +31,21 @@ export const build = async (
   console.log(`[x] created temp dir`);
   const tsconfig = getTsconfig();
   console.log(`[x] loaded tsconfig`);
-  await transfromTSFiles(paths, fs, tsconfig);
+  await transfromTSFiles(paths, fs);
   console.log(`[x] transfromed to JavaScript`);
   const asts = parseFiles(paths, fs);
   console.log(`[x] parsed to ast`);
   const astMap = new Map(zip(paths, asts));
   console.log(`[x] created ast map`);
+  if (tsconfig.path && tsconfig.options) {
+    const tempTsconfigPath = convertPathToTemp(tsconfig.path, cwd);
+    resolveImportPathAsts(
+      astMap,
+      { compilerOptions: tsconfig.options },
+      tempTsconfigPath,
+    );
+    console.log(`[x] replaced typescript path option import`);
+  }
   const shouldReplaceData = collectShouldReplaceImports(astMap);
   const shouldReplaceExportData = convertShouldReplaceExportData(
     shouldReplaceData.shouldReplaceExportFiles,

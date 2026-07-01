@@ -1,5 +1,4 @@
 // oxlint-disable typescript/unbound-method
-import { dirname } from "path";
 import ts from "typescript";
 
 const parseConfigHost: ts.ParseConfigFileHost = {
@@ -12,7 +11,10 @@ const parseConfigHost: ts.ParseConfigFileHost = {
   onUnRecoverableConfigFileDiagnostic: () => {},
 };
 
-export const getTsconfig = (): ts.CompilerOptions => {
+export const getTsconfig = (): {
+  options?: ts.CompilerOptions;
+  path?: string;
+} => {
   const configPath = ts.findConfigFile(
     "./",
     ts.sys.fileExists,
@@ -29,8 +31,7 @@ export const getTsconfig = (): ts.CompilerOptions => {
   );
 
   if (!parsed) {
-    return {};
+    return { path: configPath };
   }
-  parsed.options.baseUrl ??= dirname(configPath);
-  return parsed.options;
+  return { path: configPath, options: parsed.options };
 };
