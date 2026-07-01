@@ -35,7 +35,7 @@ export default defineConfig({
     options: { typeAware: true, typeCheck: true },
   },
   test: {
-    include: ["packages/*/src/**/*.test.ts"],
+    include: ["**/*.test.ts"],
     exclude: ["**/node_modules/**", "**/.git/**"],
     coverage: {
       provider: "v8",

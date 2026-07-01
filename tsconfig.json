@@ -8,6 +8,9 @@
         },
         {
             "path": "./packages/build-test/tsconfig.json"
+        },
+        {
+            "path": "./packages/lint/tsconfig.json"
         }
     ],
     "include": []
