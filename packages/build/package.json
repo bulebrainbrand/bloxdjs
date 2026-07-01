@@ -1,0 +1,46 @@
+{
+  "name": "@bloxdjs/build",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./.bin": "./dist/.bin/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "@bloxdjs/build": "./dist/.bin/index.mjs"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp test --watch",
+    "test": "vp test --coverage",
+    "link": "",
+    "prepublishOnly": "vp run build"
+  },
+  "dependencies": {
+    "@babel/generator": "catalog:",
+    "@babel/parser": "catalog:",
+    "@babel/traverse": "catalog:",
+    "@babel/types": "catalog:",
+    "@swc/core": "catalog:",
+    "esbuild": "catalog:",
+    "glob": "catalog:",
+    "gunshi": "catalog:",
+    "typescript": "catalog:",
+    "unconfig": "catalog:",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.8.0",
+      "onFail": "download"
+    }
+  }
+}

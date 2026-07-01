@@ -1,0 +1,14 @@
+{
+    "references": [
+        {
+            "path": "./packages/api/tsconfig.json"
+        },
+        {
+            "path": "./packages/build/tsconfig.json"
+        },
+        {
+            "path": "./packages/build-test/tsconfig.json"
+        }
+    ],
+    "include": []
+}

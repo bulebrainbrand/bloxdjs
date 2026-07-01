@@ -1,0 +1,30 @@
+packages:
+  - packages/*
+
+allowBuilds:
+  '@swc/core': false
+  esbuild: set this to true or false
+
+catalog:
+  '@babel/generator': ^8.0.0
+  '@babel/parser': ^8.0.0
+  '@babel/traverse': ^8.0.0
+  '@babel/types': ^8.0.0
+  '@swc/core': ^1.15.43
+  '@types/babel__parser': ^7.1.5
+  '@types/babel__traverse': ^7.28.0
+  '@types/node': ^26.0.1
+  '@typescript/native-preview': 7.0.0-dev.20260626.1
+  '@vitest/coverage-v8': 4.1.9
+  esbuild: ^0.28.1
+  glob: ^13.0.6
+  gunshi: ^0.35.1
+  typescript: ^6.0.3
+  unconfig: ^7.5.0
+  valibot: ^1.4.1
+  vite-plus: ^0.2.1
+
+catalogMode: prefer
+
+overrides:
+  '@bloxdjs/api': link:packages/build
