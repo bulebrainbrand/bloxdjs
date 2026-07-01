@@ -16,6 +16,6 @@
         "composite": true,
     },
     "include": [
-        "./src**/*.ts"
+        "./src/**/*.ts"
     ],
 }
