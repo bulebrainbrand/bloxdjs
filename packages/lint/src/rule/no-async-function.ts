@@ -39,7 +39,7 @@ export default {
             });
           } else {
             context.report({
-              messageId: "nonUseAsyncGeneratorFunction",
+              messageId: "nonUseAsyncFunction",
               node,
               fix(fixer) {
                 const asyncToken = context.sourceCode.getFirstToken(node)!;
