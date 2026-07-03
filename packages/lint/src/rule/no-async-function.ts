@@ -14,12 +14,16 @@ export default {
         "Do not use async function. use normal function instead",
       nonUseAsyncGeneratorFunction:
         "Do not use async generator function. use normal generator function instead",
+      nonUseAsyncMethod: "Do not use async method. use normal method instead",
+      nonUseAsyncClassMethod:
+        "Do not use async class method. use normal method instead",
     },
     schema: [],
     fixable: "code",
   },
   defaultOptions: [],
   create(context) {
+    const asyncFilter = (token: TSESTree.Token) => token.value === "async";
     return {
       FunctionDeclaration(node) {
         if (node.async) {
@@ -28,7 +32,10 @@ export default {
               messageId: "nonUseAsyncGeneratorFunction",
               node,
               fix(fixer) {
-                const asyncToken = context.sourceCode.getFirstToken(node)!;
+                const asyncToken = context.sourceCode.getFirstToken(
+                  node,
+                  asyncFilter,
+                )!;
                 const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
                 return fixer.replaceTextRange(
@@ -42,7 +49,10 @@ export default {
               messageId: "nonUseAsyncFunction",
               node,
               fix(fixer) {
-                const asyncToken = context.sourceCode.getFirstToken(node)!;
+                const asyncToken = context.sourceCode.getFirstToken(
+                  node,
+                  asyncFilter,
+                )!;
                 const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
                 return fixer.replaceTextRange(
@@ -60,7 +70,10 @@ export default {
             messageId: "nonUseAsyncArrowFunction",
             node,
             fix(fixer) {
-              const asyncToken = context.sourceCode.getFirstToken(node)!;
+              const asyncToken = context.sourceCode.getFirstToken(
+                node,
+                asyncFilter,
+              )!;
               const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
               return fixer.replaceTextRange(
@@ -72,12 +85,22 @@ export default {
         }
       },
       FunctionExpression(node) {
-        if (node.async) {
+        if (!node.async) return;
+        if (node.parent.type === AST_NODE_TYPES.MethodDefinition) {
+          return;
+        }
+        if (
+          node.parent.type === AST_NODE_TYPES.Property &&
+          node.parent.method
+        ) {
           context.report({
-            messageId: "nonUseAsyncFunction",
+            messageId: "nonUseAsyncMethod",
             node,
             fix(fixer) {
-              const asyncToken = context.sourceCode.getFirstToken(node)!;
+              const asyncToken = context.sourceCode.getFirstToken(
+                node.parent,
+                asyncFilter,
+              )!;
               const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
               return fixer.replaceTextRange(
@@ -86,7 +109,64 @@ export default {
               );
             },
           });
+          return;
         }
+        context.report({
+          messageId: "nonUseAsyncFunction",
+          node,
+          fix(fixer) {
+            const asyncToken = context.sourceCode.getFirstToken(
+              node,
+              asyncFilter,
+            )!;
+            const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
+
+            return fixer.replaceTextRange(
+              [asyncToken.range[0], nextToken.range[0]],
+              "",
+            );
+          },
+        });
+      },
+      MethodDefinition(node) {
+        console.log(node);
+        if (node.kind !== "method") return;
+        if (!node.value.async) return;
+        if (node.value.generator) {
+          context.report({
+            messageId: "nonUseAsyncClassMethod",
+            node,
+            fix(fixer) {
+              const asyncToken = context.sourceCode.getFirstToken(
+                node,
+                asyncFilter,
+              )!;
+              const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
+              console.log(asyncToken.range[0], nextToken.range[0]);
+              return fixer.replaceTextRange(
+                [asyncToken.range[0], nextToken.range[0]],
+                "",
+              );
+            },
+          });
+          return;
+        }
+        context.report({
+          messageId: "nonUseAsyncClassMethod",
+          node,
+          fix(fixer) {
+            const asyncToken = context.sourceCode.getFirstToken(
+              node,
+              asyncFilter,
+            )!;
+            const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
+
+            return fixer.replaceTextRange(
+              [asyncToken.range[0], nextToken.range[0]],
+              "",
+            );
+          },
+        });
       },
     };
   },
@@ -94,4 +174,6 @@ export default {
   | "nonUseAsyncFunction"
   | "nonUseAsyncArrowFunction"
   | "nonUseAsyncGeneratorFunction"
+  | "nonUseAsyncMethod"
+  | "nonUseAsyncClassMethod"
 >;

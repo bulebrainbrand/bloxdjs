@@ -24,6 +24,12 @@ ruleTester.run("no-async-function", rule, {
       code: `const a = function(){}`,
     },
     { code: `const a = () => {}` },
+    { code: `const a = {a(){}}` },
+    { code: `class a{method(){}}` },
+
+    { code: `class a{static method(){}}` },
+
+    { code: `class a{constructor(){}}` },
   ],
   invalid: [
     {
@@ -50,6 +56,46 @@ ruleTester.run("no-async-function", rule, {
       code: `const a = async () => {}`,
       errors: [{ messageId: "nonUseAsyncArrowFunction" }],
       output: `const a = () => {}`,
+    },
+    {
+      code: `const a = {method:async function(){}}`,
+      errors: [{ messageId: "nonUseAsyncFunction" }],
+      output: `const a = {method:function(){}}`,
+    },
+    {
+      code: `const a = {async method(){}}`,
+      errors: [{ messageId: "nonUseAsyncMethod" }],
+      output: `const a = {method(){}}`,
+    },
+    {
+      code: `class a{async method(){}}`,
+      errors: [{ messageId: "nonUseAsyncClassMethod" }],
+      output: `class a{method(){}}`,
+    },
+    {
+      code: `class a{async *method(){}}`,
+      errors: [{ messageId: "nonUseAsyncClassMethod" }],
+      output: `class a{*method(){}}`,
+    },
+    {
+      code: `class a{static async *method(){}}`,
+      errors: [{ messageId: "nonUseAsyncClassMethod" }],
+      output: `class a{static *method(){}}`,
+    },
+    {
+      code: `class a{static public async *method(){}}`,
+      errors: [{ messageId: "nonUseAsyncClassMethod" }],
+      output: `class a{static public *method(){}}`,
+    },
+    {
+      code: `class a{static private async *method(){}}`,
+      errors: [{ messageId: "nonUseAsyncClassMethod" }],
+      output: `class a{static private *method(){}}`,
+    },
+    {
+      code: `class a{async #method(){}}`,
+      errors: [{ messageId: "nonUseAsyncClassMethod" }],
+      output: `class a{#method(){}}`,
     },
   ],
 });
