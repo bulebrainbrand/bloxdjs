@@ -11,9 +11,6 @@ catalog:
   "@babel/types": ^8.0.0
   "@changesets/changelog-github": ^0.7.0
   "@changesets/cli": ^2.31.0
-  "@swc/core": ^1.15.43
-  "@types/babel__parser": ^7.1.5
-  "@types/babel__traverse": ^7.28.0
   "@types/node": ^26.0.1
   "@typescript-eslint/rule-tester": ^8.62.1
   "@typescript-eslint/utils": ^8.62.1
