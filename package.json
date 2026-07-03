@@ -16,8 +16,5 @@
       "onFail": "download"
     }
   },
-  "packageManager": "pnpm@11.8.0",
-  "dependencies": {
-    "@bloxdjs/api": "link:packages/build"
-  }
+  "packageManager": "pnpm@11.8.0"
 }
