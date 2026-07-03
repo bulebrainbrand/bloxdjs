@@ -1,4 +1,7 @@
 {
+  "name": "@bloxdjs/monorepo",
+  "version": "0.0.0",
+  "private": true,
   "devDependencies": {
     "@typescript/native-preview": "catalog:",
     "typescript": "catalog:",

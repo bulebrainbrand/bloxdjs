@@ -1,6 +1,8 @@
 {
   "name": "@bloxdjs/lint",
   "type": "module",
+  "version": "0.0.1",
+  "private": false,
   "scripts": {
     "build": "vp pack",
     "dev": "vp test --watch",

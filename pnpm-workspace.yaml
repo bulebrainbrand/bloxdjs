@@ -10,6 +10,8 @@ catalog:
   '@babel/parser': ^8.0.0
   '@babel/traverse': ^8.0.0
   '@babel/types': ^8.0.0
+  '@changesets/changelog-github': ^0.7.0
+  '@changesets/cli': ^2.31.0
   '@swc/core': ^1.15.43
   '@types/babel__parser': ^7.1.5
   '@types/babel__traverse': ^7.28.0
