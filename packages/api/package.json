@@ -6,13 +6,11 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "default": "./dist/index.mjs"
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "node covert.js src/index.ts dist/index.d.ts",
     "dev": "vp test --watch",
     "test": "vp test --coverage",
     "prepublishOnly": "vp run build"
