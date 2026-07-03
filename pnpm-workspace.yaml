@@ -30,5 +30,5 @@ catalog:
 
 catalogMode: prefer
 
-overrides:
-  '@bloxdjs/api': link:packages/build
+allowBuilds:
+  esbuild: true
