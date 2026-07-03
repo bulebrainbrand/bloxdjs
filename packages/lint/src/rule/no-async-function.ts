@@ -71,6 +71,23 @@ export default {
           });
         }
       },
+      FunctionExpression(node) {
+        if (node.async) {
+          context.report({
+            messageId: "nonUseAsyncFunction",
+            node,
+            fix(fixer) {
+              const asyncToken = context.sourceCode.getFirstToken(node)!;
+              const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
+
+              return fixer.replaceTextRange(
+                [asyncToken.range[0], nextToken.range[0]],
+                "",
+              );
+            },
+          });
+        }
+      },
     };
   },
 } as const satisfies RuleModule<
