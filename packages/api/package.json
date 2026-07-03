@@ -17,13 +17,6 @@
     "test": "vp test --coverage",
     "prepublishOnly": "vp run build"
   },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.8.0",
-      "onFail": "download"
-    }
-  },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
     "@changesets/cli": "catalog:"

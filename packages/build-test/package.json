@@ -21,12 +21,5 @@
   "dependencies": {
     "esbuild": "catalog:",
     "@bloxdjs/build": "workspace:*"
-  },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.8.0",
-      "onFail": "download"
-    }
   }
 }
