@@ -23,6 +23,7 @@ ruleTester.run("no-async-function", rule, {
     {
       code: `const a = function(){}`,
     },
+    { code: `const a = () => {}` },
   ],
   invalid: [
     {
@@ -44,6 +45,11 @@ ruleTester.run("no-async-function", rule, {
       code: `const a = async function(){}`,
       errors: [{ messageId: "nonUseAsyncFunction" }],
       output: `const a = function(){}`,
+    },
+    {
+      code: `const a = async () => {}`,
+      errors: [{ messageId: "nonUseAsyncArrowFunction" }],
+      output: `const a = () => {}`,
     },
   ],
 });
