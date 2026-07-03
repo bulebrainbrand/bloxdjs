@@ -12,5 +12,12 @@
   "dependencies": {
     "@typescript-eslint/rule-tester": "catalog:",
     "@typescript-eslint/utils": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.8.0",
+      "onFail": "download"
+    }
   }
 }
