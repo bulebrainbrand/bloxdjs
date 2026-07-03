@@ -271,6 +271,12 @@ importers:
         specifier: link:packages/build
         version: link:packages/build
     devDependencies:
+      '@changesets/changelog-github':
+        specifier: 'catalog:'
+        version: 0.7.0
+      '@changesets/cli':
+        specifier: 'catalog:'
+        version: 2.31.0(@types/node@26.0.1)
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260626.1
@@ -281,14 +287,7 @@ importers:
         specifier: 'catalog:'
         version: 0.2.1(@types/node@26.0.1)(@vitest/coverage-v8@4.1.9)(esbuild@0.28.1)(jiti@2.7.0)(typescript@6.0.3)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0))
 
-  packages/api:
-    devDependencies:
-      '@changesets/changelog-github':
-        specifier: 'catalog:'
-        version: 0.7.0
-      '@changesets/cli':
-        specifier: 'catalog:'
-        version: 2.31.0(@types/node@26.0.1)
+  packages/api: {}
 
   packages/build:
     dependencies:
@@ -329,15 +328,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
-
-  packages/build-test:
-    dependencies:
-      '@bloxdjs/build':
-        specifier: workspace:*
-        version: link:../build
-      esbuild:
-        specifier: 'catalog:'
-        version: 0.28.1
 
   packages/lint:
     dependencies:
