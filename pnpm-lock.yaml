@@ -260,16 +260,9 @@ catalogs:
       specifier: ^0.2.1
       version: 0.2.1
 
-overrides:
-  '@bloxdjs/api': link:packages/build
-
 importers:
 
   .:
-    dependencies:
-      '@bloxdjs/api':
-        specifier: link:packages/build
-        version: link:packages/build
     devDependencies:
       '@changesets/changelog-github':
         specifier: 'catalog:'
