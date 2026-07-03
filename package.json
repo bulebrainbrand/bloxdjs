@@ -9,12 +9,5 @@
     "@changesets/changelog-github": "catalog:",
     "@changesets/cli": "catalog:"
   },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.8.0",
-      "onFail": "download"
-    }
-  },
   "packageManager": "pnpm@11.8.0"
 }
