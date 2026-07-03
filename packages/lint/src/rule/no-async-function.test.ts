@@ -28,18 +28,22 @@ ruleTester.run("no-async-function", rule, {
     {
       code: `async () => {}`,
       errors: [{ messageId: "nonUseAsyncArrowFunction" }],
+      output: `() => {}`,
     },
     {
       code: `async function a(){}`,
       errors: [{ messageId: "nonUseAsyncFunction" }],
+      output: `function a(){}`,
     },
     {
       code: `async function* a(){}`,
       errors: [{ messageId: "nonUseAsyncGeneratorFunction" }],
+      output: `function* a(){}`,
     },
     {
       code: `const a = async function(){}`,
       errors: [{ messageId: "nonUseAsyncFunction" }],
+      output: `const a = function(){}`,
     },
   ],
 });
