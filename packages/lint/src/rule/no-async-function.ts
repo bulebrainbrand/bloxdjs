@@ -16,6 +16,7 @@ export default {
         "Do not use async generator function. use normal generator function instead",
     },
     schema: [],
+    fixable: "code",
   },
   defaultOptions: [],
   create(context) {
