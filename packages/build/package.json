@@ -13,6 +13,9 @@
   "bin": {
     "@bloxdjs/build": "./dist/.bin/index.mjs"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vp pack",
     "dev": "vp test --watch",

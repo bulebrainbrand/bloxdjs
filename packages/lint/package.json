@@ -12,5 +12,8 @@
   "dependencies": {
     "@typescript-eslint/rule-tester": "catalog:",
     "@typescript-eslint/utils": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
