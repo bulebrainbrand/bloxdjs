@@ -7,10 +7,12 @@ on:
       - main
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
-permissions:
-  id-token: write
 jobs:
   release:
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     name: Release
     runs-on: ubuntu-latest
     steps:
