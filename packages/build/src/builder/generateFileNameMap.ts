@@ -1,6 +1,5 @@
-export const generateFileNameMap = (data: {
-  shouldReplaceImportFiles: Set<string>;
-  shouldReplaceExportFiles: Partial<
+export const generateFileNameMap = (
+  data: Partial<
     Record<
       string,
       | {
@@ -11,11 +10,11 @@ export const generateFileNameMap = (data: {
           type: "all";
         }
     >
-  >;
-}): Map<string, string> => {
+  >,
+): Map<string, string> => {
   let number = 0;
   const map = new Map<string, string>();
-  for (const name of Object.keys(data.shouldReplaceExportFiles)) {
+  for (const name of Object.keys(data)) {
     map.set(name, String(number++));
   }
   return map;
