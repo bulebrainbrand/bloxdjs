@@ -3,7 +3,6 @@ import * as path from "node:path";
 
 export interface TsConfig {
   compilerOptions?: {
-    baseUrl?: string;
     paths?: Record<string, string[]>;
   };
 }
@@ -18,52 +17,50 @@ export function resolveImportPath(
     return importString;
   }
 
-  const { baseUrl, paths } = tsconfig.compilerOptions ?? {};
+  const { paths } = tsconfig.compilerOptions ?? {};
+  if (!paths) return importString;
   const tsconfigDir = path.dirname(path.resolve(tsconfigFilePath));
-  const baseUrlAbsolute = path.resolve(tsconfigDir, baseUrl ?? ".");
+  const baseUrlAbsolute = path.resolve(tsconfigDir);
 
   let resolvedAbsolutePath: string | null = null;
+  for (const [pattern, targets] of Object.entries(paths)) {
+    const wildcardIndex = pattern.indexOf("*");
+    const hasWildcard = wildcardIndex !== -1;
 
-  if (paths) {
-    for (const [pattern, targets] of Object.entries(paths)) {
-      const wildcardIndex = pattern.indexOf("*");
-      const hasWildcard = wildcardIndex !== -1;
+    const prefix = hasWildcard ? pattern.slice(0, wildcardIndex) : pattern;
+    const suffix = hasWildcard ? pattern.slice(wildcardIndex + 1) : "";
 
-      const prefix = hasWildcard ? pattern.slice(0, wildcardIndex) : pattern;
-      const suffix = hasWildcard ? pattern.slice(wildcardIndex + 1) : "";
+    let matchedPart: string | null = null;
 
-      let matchedPart: string | null = null;
-
-      if (hasWildcard) {
-        if (
-          importString.startsWith(prefix) &&
-          importString.endsWith(suffix) &&
-          importString.length >= prefix.length + suffix.length
-        ) {
-          matchedPart = importString.slice(
-            prefix.length,
-            importString.length - suffix.length,
-          );
-        }
-      } else if (importString === pattern) {
-        matchedPart = "";
+    if (hasWildcard) {
+      if (
+        importString.startsWith(prefix) &&
+        importString.endsWith(suffix) &&
+        importString.length >= prefix.length + suffix.length
+      ) {
+        matchedPart = importString.slice(
+          prefix.length,
+          importString.length - suffix.length,
+        );
       }
-
-      if (matchedPart === null) continue;
-      const target: string | undefined = targets[0];
-      if (target === undefined) continue;
-
-      const resolvedTarget = hasWildcard
-        ? target.replace("*", matchedPart)
-        : target;
-
-      resolvedAbsolutePath = path.resolve(baseUrlAbsolute, resolvedTarget);
-      break;
+    } else if (importString === pattern) {
+      matchedPart = "";
     }
+
+    if (matchedPart === null) continue;
+    const target: string | undefined = targets[0];
+    if (target === undefined) continue;
+
+    const resolvedTarget = hasWildcard
+      ? target.replace("*", matchedPart)
+      : target;
+
+    resolvedAbsolutePath = path.resolve(baseUrlAbsolute, resolvedTarget);
+    break;
   }
 
   if (!resolvedAbsolutePath) {
-    resolvedAbsolutePath = path.resolve(baseUrlAbsolute, importString);
+    return importString;
   }
 
   const targetDir = path.dirname(path.resolve(targetFilePath));
