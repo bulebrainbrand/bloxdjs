@@ -3,11 +3,15 @@
   "type": "module",
   "version": "0.0.1",
   "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bulebrainbrand/bloxdjs/tree/main/packages/lint"
+  },
   "scripts": {
-    "build": "vp pack",
-    "dev": "vp test --watch",
-    "test": "vp test --coverage",
-    "prepublishOnly": "vp run build"
+    "build": "pnpm exec vp pack",
+    "dev": "pnpm exec vp test --watch",
+    "test": "pnpm exec vp test --coverage",
+    "prepublishOnly": "pnpm exec vp run build"
   },
   "dependencies": {
     "@typescript-eslint/rule-tester": "catalog:",
