@@ -6,6 +6,10 @@
   "files": [
     "dist/"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bulebrainbrand/bloxdjs/tree/main/packages/api"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts"
@@ -13,9 +17,9 @@
   },
   "scripts": {
     "build": "node covert.js src/index.ts dist/index.d.ts",
-    "dev": "vp test --watch",
-    "test": "vp test --coverage",
-    "prepublishOnly": "vp run build"
+    "dev": "pnpm exec vp test --watch",
+    "test": "pnpm exec vp test --coverage",
+    "prepublishOnly": "pnpm exec vp run build"
   },
   "publishConfig": {
     "access": "public"

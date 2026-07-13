@@ -5,6 +5,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bulebrainbrand/bloxdjs/tree/main/packages/build"
+  },
   "exports": {
     ".": "./dist/index.mjs",
     "./.bin": "./dist/.bin/index.mjs",
@@ -17,11 +21,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
-    "dev": "vp test --watch",
-    "test": "vp test --coverage",
+    "build": "pnpm exec vp pack",
+    "dev": "pnpm exec vp test --watch",
+    "test": "pnpm exec vp test --coverage",
     "link": "",
-    "prepublishOnly": "vp run build"
+    "prepublishOnly": "pnpm exec vp run build"
   },
   "dependencies": {
     "@babel/generator": "catalog:",
