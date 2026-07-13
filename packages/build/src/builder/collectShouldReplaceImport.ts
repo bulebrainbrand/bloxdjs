@@ -66,7 +66,6 @@ export const collectShouldReplaceExporter = (
         return;
       }
       const value = importMap.get(result.path);
-      // this will not be true (in valid javascript),but i should add this for type checker.
       if (value?.type === "all") {
         return;
       }
