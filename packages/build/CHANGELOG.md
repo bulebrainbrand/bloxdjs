@@ -1,5 +1,11 @@
 # @bloxdjs/build
 
+## 0.0.4
+
+### Patch Changes
+
+- [#9](https://github.com/bulebrainbrand/bloxdjs/pull/9) [`898dfc9`](https://github.com/bulebrainbrand/bloxdjs/commit/898dfc942a9f847f07ebc50c2251e21e34e6b0aa) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add debug option
+
 ## 0.0.3
 
 ### Patch Changes
