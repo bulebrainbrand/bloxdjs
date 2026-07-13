@@ -1,6 +1,10 @@
 import traverse, { type Visitor } from "@babel/traverse";
 import * as t from "@babel/types";
-import { getNameFromIdentifierOrStringLiteral, resolvePath } from "./utils";
+import {
+  getNameFromIdentifierOrStringLiteral,
+  isNpmPackage,
+  resolvePath,
+} from "./utils";
 import { getFileInfo } from "./getFileInfo";
 import { isErr, unwrap } from "../result";
 
@@ -58,7 +62,7 @@ export const collectShouldReplaceExporter = (
     ImportDeclaration(importPath) {
       const result = extractImportMember(importPath.node);
 
-      if (result.type === "package") {
+      if (isNpmPackage(result.path)) {
         return;
       }
       const value = importMap.get(result.path);
@@ -66,7 +70,7 @@ export const collectShouldReplaceExporter = (
       if (value?.type === "all") {
         return;
       }
-      if (result.type === "every") {
+      if (result.type === "all") {
         importMap.set(result.path, { type: "all" });
         return;
       }
@@ -84,8 +88,7 @@ export const extractImportMember = (
   node: t.ImportDeclaration,
 ):
   | { type: "some"; path: string; member: Set<string> }
-  | { type: "package" }
-  | { type: "every"; path: string } => {
+  | { type: "all"; path: string } => {
   const exporter = node.source.value;
   const member = [];
 
@@ -100,7 +103,7 @@ export const extractImportMember = (
         break;
       }
       case "ImportNamespaceSpecifier": {
-        return { type: "every", path: exporter };
+        return { type: "all", path: exporter };
       }
     }
   }

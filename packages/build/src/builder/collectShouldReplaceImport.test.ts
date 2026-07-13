@@ -6,18 +6,18 @@ import {
 } from "./collectShouldReplaceImport";
 import { parse } from "@babel/parser";
 describe("test extractImportMember", () => {
-  it("when only ImportNamespaceSpecifier, return type:every", () => {
+  it("when only ImportNamespaceSpecifier, return type:all", () => {
     const ast = t.importDeclaration(
       [t.importNamespaceSpecifier(t.identifier("foo"))],
       t.stringLiteral("./foo.ts"),
     );
     expect(extractImportMember(ast)).toStrictEqual({
-      type: "every",
+      type: "all",
       path: "./foo.ts",
     });
   });
 
-  it("when include ImportNamespaceSpecifier, return type:every", () => {
+  it("when include ImportNamespaceSpecifier, return type:all", () => {
     const ast = t.importDeclaration(
       [
         t.importSpecifier(t.identifier("variable"), t.identifier("variable")),
@@ -26,7 +26,7 @@ describe("test extractImportMember", () => {
       t.stringLiteral("./foo.ts"),
     );
     expect(extractImportMember(ast)).toStrictEqual({
-      type: "every",
+      type: "all",
       path: "./foo.ts",
     });
   });
