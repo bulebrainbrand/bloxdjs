@@ -6,7 +6,7 @@ import { transfromTSFiles } from "./transfromTSToJS";
 import { parseFiles } from "./parse";
 import { zip } from "../utils/zip";
 import { getTsconfig } from "./tsconfig";
-import { collectShouldReplaceImports } from "./collectShouldReplaceImport";
+import { collectShouldReplaceImportExports } from "./collectShouldReplaceImport";
 import { generateFileNameMap } from "./generateFileNameMap";
 import { convertShouldReplaceExportData } from "./convertShouldReplaceData";
 import { addGlobalThisExport } from "./exportAdder";
@@ -35,10 +35,14 @@ export const build = async (
   console.log(`[x] transfromed to JavaScript`);
   const asts = parseFiles(paths, fs);
   console.log(`[x] parsed to ast`);
+  /**
+   * map of absoluted file path and ast
+   */
   const astMap = new Map(zip(paths, asts));
   console.log(`[x] created ast map`);
-  if (tsconfig.path && tsconfig.options) {
+  if (tsconfig.path && tsconfig.options && tsconfig.options.paths) {
     const tempTsconfigPath = convertPathToTemp(tsconfig.path, cwd);
+    // when tsconfig is exists, resolve tsconfig original path. for example, @/foo.ts
     resolveImportPathAsts(
       astMap,
       { compilerOptions: tsconfig.options },
@@ -46,7 +50,7 @@ export const build = async (
     );
     console.log(`[x] replaced typescript path option import`);
   }
-  const shouldReplaceData = collectShouldReplaceImports(astMap);
+  const shouldReplaceData = collectShouldReplaceImportExports(astMap);
   const shouldReplaceExportData = convertShouldReplaceExportData(
     shouldReplaceData.shouldReplaceExportFiles,
   );

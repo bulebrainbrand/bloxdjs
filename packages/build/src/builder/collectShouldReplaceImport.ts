@@ -7,7 +7,9 @@ import { isErr, unwrap } from "../result";
 /**
  * must replace import with globalThis
  */
-export const collectShouldReplaceImports = (astMap: Map<string, t.File>) => {
+export const collectShouldReplaceImportExports = (
+  astMap: Map<string, t.File>,
+) => {
   const shouldReplaceExportFiles: Partial<
     Record<string, { type: "part"; member: Set<string> } | { type: "all" }>
   > = {};
@@ -19,18 +21,21 @@ export const collectShouldReplaceImports = (astMap: Map<string, t.File>) => {
       throw new TypeError(`${filePath} is not valid. file mode error:${err}`);
     }
     if (unwrap(info).type === "worldcode") continue;
-    const result = collectShouldReplaceImport(ast, filePath);
+    const result = collectShouldReplaceExporter(ast);
     for (const [exporter, obj] of result) {
-      if (shouldReplaceExportFiles[exporter] == null || obj.type === "all") {
-        shouldReplaceExportFiles[exporter] = obj;
+      const resolvedExporter = resolvePath(exporter, filePath);
+      if (
+        shouldReplaceExportFiles[resolvedExporter] == null ||
+        obj.type === "all"
+      ) {
+        shouldReplaceExportFiles[resolvedExporter] = obj;
         continue;
       }
-      if (shouldReplaceExportFiles[exporter].type === "all") {
+      if (shouldReplaceExportFiles[resolvedExporter].type === "all") {
         continue;
       }
-      shouldReplaceExportFiles[exporter].member = shouldReplaceExportFiles[
-        exporter
-      ].member.union(obj.member);
+      shouldReplaceExportFiles[resolvedExporter].member =
+        shouldReplaceExportFiles[resolvedExporter].member.union(obj.member);
     }
     if (result.size !== 0) {
       shouldReplaceImportFiles.add(filePath);
@@ -38,15 +43,16 @@ export const collectShouldReplaceImports = (astMap: Map<string, t.File>) => {
   }
   return { shouldReplaceImportFiles, shouldReplaceExportFiles };
 };
-
-export const collectShouldReplaceImport = (ast: t.File, filePath: string) => {
+export type ImportedMemberData =
+  | { type: "part"; member: Set<string> }
+  | { type: "all" };
+export const collectShouldReplaceExporter = (
+  ast: t.File,
+): Map<string, ImportedMemberData> => {
   /**
    * keyはimport時の識別子
    */
-  const importMap: Map<
-    string,
-    { type: "part"; member: Set<string> } | { type: "all" }
-  > = new Map();
+  const importMap = new Map<string, ImportedMemberData>();
 
   const visitor: Visitor = {
     ImportDeclaration(importPath) {
@@ -55,16 +61,16 @@ export const collectShouldReplaceImport = (ast: t.File, filePath: string) => {
       if (result.type === "package") {
         return;
       }
-      const id = resolvePath(result.path, filePath);
-      const value = importMap.get(id);
+      const value = importMap.get(result.path);
+      // this will not be true (in valid javascript),but i should add this for type checker.
       if (value?.type === "all") {
         return;
       }
       if (result.type === "every") {
-        importMap.set(id, { type: "all" });
+        importMap.set(result.path, { type: "all" });
         return;
       }
-      importMap.set(id, {
+      importMap.set(result.path, {
         type: "part",
         member: result.member.union(value?.member ?? new Set()),
       });
@@ -81,7 +87,6 @@ export const extractImportMember = (
   | { type: "package" }
   | { type: "every"; path: string } => {
   const exporter = node.source.value;
-  if (!exporter.startsWith(".")) return { type: "package" };
   const member = [];
 
   for (const spec of node.specifiers) {

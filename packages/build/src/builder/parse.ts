@@ -12,7 +12,12 @@ export const parseFileFromPath = (
   const content = fs.readFileSync(path).toString();
   return parseFile(content);
 };
-
+/**
+ *
+ * @param paths - array of absoulted file path which is in temp direcotry
+ * @param fs
+ * @returns
+ */
 export const parseFiles = (paths: string[], fs: ReadonlyFsClient): t.File[] => {
   return paths.map((path) => parseFileFromPath(path, fs));
 };
