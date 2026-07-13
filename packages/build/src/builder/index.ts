@@ -84,6 +84,7 @@ export const build = async (
     config.minify.enable,
   );
   console.log(`[x] packed files`);
-  fs.rmSync(getTempDir(cwd), { recursive: true, force: true });
+  if (config.debug)
+    fs.rmSync(getTempDir(cwd), { recursive: true, force: true });
   console.log(`[x] clear temp files`);
 };

@@ -12,6 +12,7 @@ const schema = v.optional(
     ),
     codeblock: v.optional(v.object({}), {}),
     minify: v.optional(v.object({ enable: v.boolean() }), { enable: true }),
+    debug: v.optional(v.boolean(), false),
   }),
   {},
 );
