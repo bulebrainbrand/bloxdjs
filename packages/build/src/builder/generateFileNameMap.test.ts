@@ -4,11 +4,8 @@ describe("generateFileNameMap test", () => {
   it("generate file map", () => {
     expect(
       generateFileNameMap({
-        shouldReplaceExportFiles: {
-          "./src/index.ts": { type: "part", member: new Set(["foo"]) },
-          "./src/foo.ts": { type: "all" },
-        },
-        shouldReplaceImportFiles: new Set(["./src/codeblock.ts"]),
+        "./src/index.ts": { type: "part", member: new Set(["foo"]) },
+        "./src/foo.ts": { type: "all" },
       }),
     ).toStrictEqual(
       new Map([

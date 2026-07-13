@@ -53,7 +53,9 @@ export const build = async (
   console.log(
     `[x] collect should replace import/exports. start transfrom import ${shouldReplaceData.shouldReplaceImportFiles.size} export ${Array.from(shouldReplaceExportData.keys()).join("\n")}`,
   );
-  const fileNameMap = generateFileNameMap(shouldReplaceData);
+  const fileNameMap = generateFileNameMap(
+    shouldReplaceData.shouldReplaceExportFiles,
+  );
   for (const [path, ast] of astMap) {
     if (shouldReplaceExportData.has(path)) {
       const shouldReplaceExport = shouldReplaceExportData.get(path)!;
