@@ -5,6 +5,7 @@ export function* zip<const Arg extends unknown[][]>(
   void,
   unknown
 > {
+  if(arrays.length === 0)return;
   const minLength = Math.min(...arrays.map((a) => a.length));
   for (let i = 0; i < minLength; i++) {
     // this is the only method
