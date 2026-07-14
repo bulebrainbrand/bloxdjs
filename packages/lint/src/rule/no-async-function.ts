@@ -129,7 +129,6 @@ export default {
         });
       },
       MethodDefinition(node) {
-        console.log(node);
         if (node.kind !== "method") return;
         if (!node.value.async) return;
         if (node.value.generator) {
@@ -142,7 +141,6 @@ export default {
                 asyncFilter,
               )!;
               const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
-              console.log(asyncToken.range[0], nextToken.range[0]);
               return fixer.replaceTextRange(
                 [asyncToken.range[0], nextToken.range[0]],
                 "",
