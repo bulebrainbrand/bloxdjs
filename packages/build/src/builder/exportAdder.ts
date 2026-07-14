@@ -9,7 +9,9 @@ import {
 } from "./utils";
 import traverse from "@babel/traverse";
 
-export type ShouldReplaceExport = Set<string> | "All";
+export type ShouldReplaceExport =
+  | { type: "part"; member: Set<string> }
+  | { type: "all" };
 
 export const addGlobalThisExport = (
   ast: t.File,
@@ -266,5 +268,6 @@ const generateGlobalThisAssignmentExpression = (
 
 const shouldExportFilter = (
   name: string,
-  shouldReplaceExport: Set<string> | "All",
-): boolean => shouldReplaceExport === "All" || shouldReplaceExport.has(name);
+  shouldReplaceExport: ShouldReplaceExport,
+): boolean =>
+  shouldReplaceExport.type === "all" || shouldReplaceExport.member.has(name);

@@ -3,10 +3,12 @@ import { generateFileNameMap } from "./generateFileNameMap";
 describe("generateFileNameMap test", () => {
   it("generate file map", () => {
     expect(
-      generateFileNameMap({
-        "./src/index.ts": { type: "part", member: new Set(["foo"]) },
-        "./src/foo.ts": { type: "all" },
-      }),
+      generateFileNameMap(
+        new Map([
+          ["./src/index.ts", { type: "part", member: new Set(["foo"]) }],
+          ["./src/foo.ts", { type: "all" }],
+        ]),
+      ),
     ).toStrictEqual(
       new Map([
         ["./src/index.ts", "0"],

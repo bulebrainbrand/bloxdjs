@@ -8,7 +8,6 @@ import { zip } from "../utils/zip";
 import { getTsconfig } from "./tsconfig";
 import { collectShouldReplaceImportExports } from "./collectShouldReplaceImport";
 import { generateFileNameMap } from "./generateFileNameMap";
-import { convertShouldReplaceExportData } from "./convertShouldReplaceData";
 import { addGlobalThisExport } from "./exportAdder";
 import { replaceImport } from "./importReplacer";
 import generate from "@babel/generator";
@@ -50,25 +49,21 @@ export const build = async (
     );
     console.log(`[x] replaced typescript path option import`);
   }
-  const shouldReplaceData = collectShouldReplaceImportExports(astMap);
-  const shouldReplaceExportData = convertShouldReplaceExportData(
-    shouldReplaceData.shouldReplaceExportFiles,
-  );
+  const { shouldReplaceExportFiles, shouldReplaceImportFiles } =
+    collectShouldReplaceImportExports(astMap);
   console.log(
-    `[x] collect should replace import/exports. start transfrom import ${shouldReplaceData.shouldReplaceImportFiles.size} export ${Array.from(shouldReplaceExportData.keys()).join("\n")}`,
+    `[x] collect should replace import/exports. start transfrom import ${shouldReplaceImportFiles.size} export ${Array.from(shouldReplaceExportFiles.keys()).join("\n")}`,
   );
-  const fileNameMap = generateFileNameMap(
-    shouldReplaceData.shouldReplaceExportFiles,
-  );
+  const fileNameMap = generateFileNameMap(shouldReplaceExportFiles);
   for (const [path, ast] of astMap) {
-    if (shouldReplaceExportData.has(path)) {
-      const shouldReplaceExport = shouldReplaceExportData.get(path)!;
+    if (shouldReplaceExportFiles.has(path)) {
+      const shouldReplaceExport = shouldReplaceExportFiles.get(path)!;
       addGlobalThisExport(ast, path, fileNameMap, shouldReplaceExport);
       console.log(
-        `[x] converted ${typeof shouldReplaceExport === "string" ? shouldReplaceExport : shouldReplaceExport.size} export`,
+        `[x] converted ${shouldReplaceExport.type === "all" ? "all" : shouldReplaceExport.member.size} export`,
       );
     }
-    if (shouldReplaceData.shouldReplaceImportFiles.has(path)) {
+    if (shouldReplaceImportFiles.has(path)) {
       replaceImport(ast, path, fileNameMap);
     }
     fs.writeFileSync(path, generate(ast).code);
