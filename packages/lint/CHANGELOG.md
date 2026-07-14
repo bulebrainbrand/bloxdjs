@@ -1,5 +1,11 @@
 # @bloxdjs/lint
 
+## 0.1.2
+
+### Patch Changes
+
+- [#15](https://github.com/bulebrainbrand/bloxdjs/pull/15) [`1a2266e`](https://github.com/bulebrainbrand/bloxdjs/commit/1a2266e12ca9e2c34269052b3315e4992a2d6647) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - fix: delete console.log on no-async-function
+
 ## 0.1.1
 
 ### Patch Changes
