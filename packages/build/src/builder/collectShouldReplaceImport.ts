@@ -14,7 +14,7 @@ import { isErr, unwrap } from "../result";
 export const collectShouldReplaceImportExports = (
   astMap: Map<string, t.File>,
 ) => {
-  const shouldReplaceExportFiles: Partial<
+  const importedExporters: Partial<
     Record<string, { type: "part"; member: Set<string> } | { type: "all" }>
   > = {};
   const shouldReplaceImportFiles: Set<string> = new Set();
@@ -24,28 +24,33 @@ export const collectShouldReplaceImportExports = (
       const err = info.error;
       throw new TypeError(`${filePath} is not valid. file mode error:${err}`);
     }
+    // worldcode do not need to edit import/export
     if (unwrap(info).type === "worldcode") continue;
+
     const result = collectShouldReplaceExporter(ast);
-    for (const [exporter, obj] of result) {
-      const resolvedExporter = resolvePath(exporter, filePath);
+    for (const [rawExporter, obj] of result) {
+      const absolutedExporterPath = resolvePath(rawExporter, filePath);
+      if (importedExporters[absolutedExporterPath]?.type === "all") continue;
       if (
-        shouldReplaceExportFiles[resolvedExporter] == null ||
+        importedExporters[absolutedExporterPath] == null ||
         obj.type === "all"
       ) {
-        shouldReplaceExportFiles[resolvedExporter] = obj;
+        importedExporters[absolutedExporterPath] = obj;
         continue;
       }
-      if (shouldReplaceExportFiles[resolvedExporter].type === "all") {
-        continue;
-      }
-      shouldReplaceExportFiles[resolvedExporter].member =
-        shouldReplaceExportFiles[resolvedExporter].member.union(obj.member);
+
+      importedExporters[absolutedExporterPath].member = importedExporters[
+        absolutedExporterPath
+      ].member.union(obj.member);
     }
     if (result.size !== 0) {
       shouldReplaceImportFiles.add(filePath);
     }
   }
-  return { shouldReplaceImportFiles, shouldReplaceExportFiles };
+  return {
+    shouldReplaceImportFiles,
+    shouldReplaceExportFiles: importedExporters,
+  };
 };
 export type ImportedMemberData =
   | { type: "part"; member: Set<string> }
