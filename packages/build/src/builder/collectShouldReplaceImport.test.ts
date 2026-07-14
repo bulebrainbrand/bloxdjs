@@ -2,6 +2,7 @@ import { describe, it, expect } from "vite-plus/test";
 import * as t from "@babel/types";
 import {
   collectShouldReplaceExporter,
+  collectShouldReplaceImportExports,
   extractImportMember,
 } from "./collectShouldReplaceImport";
 import { parse } from "@babel/parser";
@@ -116,5 +117,145 @@ describe("test collectShouldReplaceExporter", () => {
         ["./bar.ts", { type: "part", member: new Set(["bar"]) }],
       ]),
     );
+  });
+});
+
+describe("test collectShouldReplaceImportExports", () => {
+  it("When import codeblock, collect that", () => {
+    const foo = parse(`"use codeblock{foo}";import { bar } from "./bar.ts"`, {
+      sourceType: "module",
+    });
+    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+      sourceType: "module",
+    });
+    expect(
+      collectShouldReplaceImportExports(
+        new Map([
+          ["src/foo.ts", foo],
+          ["src/bar.ts", bar],
+        ]),
+      ),
+    ).toStrictEqual({
+      shouldReplaceImportFiles: new Set(["src/foo.ts"]),
+      shouldReplaceExportFiles: new Map([
+        [
+          "src/bar.ts",
+          {
+            member: new Set(["bar"]),
+            type: "part",
+          },
+        ],
+      ]),
+    });
+  });
+  it("when import codeblock even diffient directory level, collect that", () => {
+    const foo = parse(`"use codeblock{foo}";import { bar } from "../bar.ts"`, {
+      sourceType: "module",
+    });
+    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+      sourceType: "module",
+    });
+    expect(
+      collectShouldReplaceImportExports(
+        new Map([
+          ["src/dir/foo.ts", foo],
+          ["src/bar.ts", bar],
+        ]),
+      ),
+    ).toStrictEqual({
+      shouldReplaceImportFiles: new Set(["src/dir/foo.ts"]),
+      shouldReplaceExportFiles: new Map([
+        [
+          "src/bar.ts",
+          {
+            member: new Set(["bar"]),
+            type: "part",
+          },
+        ],
+      ]),
+    });
+  });
+  it("when import codeblock even diffient directory level, collect that", () => {
+    const foo = parse(
+      `"use codeblock{foo}";import { bar } from "./dir/bar.ts"`,
+      {
+        sourceType: "module",
+      },
+    );
+    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+      sourceType: "module",
+    });
+    expect(
+      collectShouldReplaceImportExports(
+        new Map([
+          ["src/foo.ts", foo],
+          ["src/dir/bar.ts", bar],
+        ]),
+      ),
+    ).toStrictEqual({
+      shouldReplaceImportFiles: new Set(["src/foo.ts"]),
+      shouldReplaceExportFiles: new Map([
+        [
+          "src/dir/bar.ts",
+          {
+            member: new Set(["bar"]),
+            type: "part",
+          },
+        ],
+      ]),
+    });
+  });
+  it("when worldcode import, does not collect that", () => {
+    const foo = parse(`"use worldcode";import { bar } from "./bar.ts"`, {
+      sourceType: "module",
+    });
+    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+      sourceType: "module",
+    });
+    expect(
+      collectShouldReplaceImportExports(
+        new Map([
+          ["src/foo.ts", foo],
+          ["src/bar.ts", bar],
+        ]),
+      ),
+    ).toStrictEqual({
+      shouldReplaceImportFiles: new Set([]),
+      shouldReplaceExportFiles: new Map(),
+    });
+  });
+  it("when one module is imported by 2 module, collect all member name which imported modules", () => {
+    const foo = parse(`"use codeblock{foo}";import { bar } from "./bar.ts"`, {
+      sourceType: "module",
+    });
+    const bar = parse(
+      `"use worldcode";export const bar = "baz";export const qux = "corge";`,
+      {
+        sourceType: "module",
+      },
+    );
+    const piyo = parse(`"use codeblock{piyo}";import {qux} from "./bar.ts"`, {
+      sourceType: "module",
+    });
+    expect(
+      collectShouldReplaceImportExports(
+        new Map([
+          ["src/foo.ts", foo],
+          ["src/bar.ts", bar],
+          ["src/piyo.ts", piyo],
+        ]),
+      ),
+    ).toStrictEqual({
+      shouldReplaceImportFiles: new Set(["src/foo.ts", "src/piyo.ts"]),
+      shouldReplaceExportFiles: new Map([
+        [
+          "src/bar.ts",
+          {
+            member: new Set(["bar", "qux"]),
+            type: "part",
+          },
+        ],
+      ]),
+    });
   });
 });

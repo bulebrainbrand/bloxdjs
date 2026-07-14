@@ -15,12 +15,10 @@ describe("addGlobalThisExport test", () => {
     const ast = parse(`export const variable = 1`, { sourceType: "module" });
     expect(
       generate(
-        addGlobalThisExport(
-          ast,
-          "src/a",
-          new Map([["src/a", "a"]]),
-          new Set(["variable"]),
-        ),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(["variable"]),
+        }),
       ).code,
     ).toBe(`export const variable = 1;
 globalThis.__b_m__["a"]["variable"] = variable`);
@@ -35,12 +33,10 @@ globalThis.__b_m__["a"]["variable"] = variable`);
     );
     expect(
       generate(
-        addGlobalThisExport(
-          ast,
-          "src/a",
-          new Map([["src/a", "a"]]),
-          new Set(["fn"]),
-        ),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(["fn"]),
+        }),
       ).code,
     ).toBe(`export function fn() {
   console.log("hi!");
@@ -52,7 +48,9 @@ globalThis.__b_m__["a"]["fn"] = fn`);
     const ast = parse(`export const variable = 1`, { sourceType: "module" });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), "All"),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "all",
+        }),
       ).code,
     ).toBe(`export const variable = 1;
 globalThis.__b_m__["a"]["variable"] = variable`);
@@ -62,12 +60,10 @@ globalThis.__b_m__["a"]["variable"] = variable`);
     const ast = parse(`export class a {};`, { sourceType: "module" });
     expect(
       generate(
-        addGlobalThisExport(
-          ast,
-          "src/a",
-          new Map([["src/a", "a"]]),
-          new Set(["a"]),
-        ),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(["a"]),
+        }),
       ).code,
     ).toBe(`export class a {}
 globalThis.__b_m__["a"]["a"] = a
@@ -78,12 +74,10 @@ globalThis.__b_m__["a"]["a"] = a
     const ast = parse(`export const a = 1,b = 2`, { sourceType: "module" });
     expect(
       generate(
-        addGlobalThisExport(
-          ast,
-          "src/a",
-          new Map([["src/a", "a"]]),
-          new Set(["a", "b"]),
-        ),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(["a", "b"]),
+        }),
       ).code,
     ).toBe(`export const a = 1,
   b = 2;
@@ -95,12 +89,10 @@ globalThis.__b_m__["a"]["b"] = b`);
     const ast = parse(`const a = 1;export {a}`, { sourceType: "module" });
     expect(
       generate(
-        addGlobalThisExport(
-          ast,
-          "src/a",
-          new Map([["src/a", "a"]]),
-          new Set(["a"]),
-        ),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(["a"]),
+        }),
       ).code,
     ).toBe(`const a = 1;
 export { a };
@@ -111,7 +103,10 @@ globalThis.__b_m__["a"].a = a`);
     const ast = parse(`const a = 1;export {a as b}`, { sourceType: "module" });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), new Set()),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(),
+        }),
       ).code,
     ).toBe(`const a = 1;
 export { a as b };`);
@@ -121,12 +116,10 @@ export { a as b };`);
     const ast = parse(`const a = 1;export {a as b}`, { sourceType: "module" });
     expect(
       generate(
-        addGlobalThisExport(
-          ast,
-          "src/a",
-          new Map([["src/a", "a"]]),
-          new Set(["b"]),
-        ),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(["b"]),
+        }),
       ).code,
     ).toBe(`const a = 1;
 export { a as b };
@@ -139,12 +132,10 @@ globalThis.__b_m__["a"].b = a`);
     });
     expect(
       generate(
-        addGlobalThisExport(
-          ast,
-          "src/a",
-          new Map([["src/a", "a"]]),
-          new Set(["0"]),
-        ),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(["0"]),
+        }),
       ).code,
     ).toBe(`const a = 1;
 export { a as "0" };
@@ -157,7 +148,10 @@ globalThis.__b_m__["a"]["0"] = a`);
     });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), new Set()),
+        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
+          type: "part",
+          member: new Set(),
+        }),
       ).code,
     ).toBe(`const a = 1;
 export { a as "0" };`);
@@ -174,7 +168,7 @@ export { a as "0" };`);
             ["src/a", "a"],
             ["src/b", "b"],
           ]),
-          new Set(["a"]),
+          { type: "part", member: new Set(["a"]) },
         ),
       ).code,
     ).toBe(`export { a } from "./b";
@@ -192,7 +186,7 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
             ["src/a", "a"],
             ["src/b", "b"],
           ]),
-          new Set(),
+          { type: "part", member: new Set() },
         ),
       ).code,
     ).toBe(`export { a } from "./b";`);
@@ -208,7 +202,7 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
             ["src/a", "a"],
             ["src/b", "b"],
           ]),
-          new Set(["a"]),
+          { type: "part", member: new Set(["a"]) },
         ),
       ).code,
     ).toBe(`export * as a from "./b";
@@ -225,7 +219,7 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"]`);
             ["src/a", "a"],
             ["src/b", "b"],
           ]),
-          new Set(),
+          { type: "part", member: new Set() },
         ),
       ).code,
     ).toBe(`export * from "./b";
@@ -244,7 +238,7 @@ describe("generateGlobalThisAssignmentExpressionsFromDeclaration test", () => {
           t.objectTypeAnnotation([]),
         ),
         "a",
-        new Set(),
+        { type: "part", member: new Set() },
       ),
     ).throw();
   });
@@ -254,7 +248,10 @@ describe("handleSourcedReExport test", () => {
   it("when get null module key, fast return", () => {
     const path = getExportNamedDeclarationPath(`export { foo } from "b";`);
     const insertAfterSpy = vi.spyOn(path, "insertAfter");
-    handleSourcedReExport(path, "moduleA", null, new Set());
+    handleSourcedReExport(path, "moduleA", null, {
+      type: "part",
+      member: new Set(),
+    });
 
     expect(insertAfterSpy).not.toHaveBeenCalled();
   });
