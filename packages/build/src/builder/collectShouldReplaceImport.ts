@@ -7,7 +7,7 @@ import {
 } from "./utils";
 import { getFileInfo } from "./getFileInfo";
 import { isErr, unwrap } from "../result";
-import type { ShouldReplaceExport } from "./exportAdder";
+import type { ExportedMemberOfShouldReplace } from "./exportAdder";
 
 /**
  * must replace import with globalThis
@@ -15,7 +15,8 @@ import type { ShouldReplaceExport } from "./exportAdder";
 export const collectShouldReplaceImportExports = (
   astMap: Map<string, t.File>,
 ) => {
-  const importedExporters: Map<string, ShouldReplaceExport> = new Map();
+  const importedExporters: Map<string, ExportedMemberOfShouldReplace> =
+    new Map();
   const shouldReplaceImportFiles: Set<string> = new Set();
   for (const [filePath, ast] of astMap) {
     const info = getFileInfo(ast);
@@ -53,11 +54,11 @@ export const collectShouldReplaceImportExports = (
 
 export const collectShouldReplaceExporter = (
   ast: t.File,
-): Map<string, ShouldReplaceExport> => {
+): Map<string, ExportedMemberOfShouldReplace> => {
   /**
    * keyはimport時の識別子
    */
-  const importMap = new Map<string, ShouldReplaceExport>();
+  const importMap = new Map<string, ExportedMemberOfShouldReplace>();
 
   const visitor: Visitor = {
     ImportDeclaration(importPath) {

@@ -9,7 +9,7 @@ import {
 } from "./utils";
 import traverse from "@babel/traverse";
 
-export type ShouldReplaceExport =
+export type ExportedMemberOfShouldReplace =
   | { type: "part"; member: Set<string> }
   | { type: "all" };
 
@@ -17,7 +17,7 @@ export const addGlobalThisExport = (
   ast: t.File,
   fileName: string,
   nameMap: Map<string, string>,
-  shouldReplaceExport: ShouldReplaceExport,
+  shouldReplaceExport: ExportedMemberOfShouldReplace,
 ): t.File => {
   const moduleKey = getModuleKeyOrThrow(nameMap, fileName);
   const visitor: Visitor = {
@@ -70,7 +70,7 @@ export const handleDeclarationExport = (
   path: NodePath<t.ExportNamedDeclaration>,
   declaration: t.Declaration,
   moduleKey: string,
-  shouldReplaceExport: ShouldReplaceExport,
+  shouldReplaceExport: ExportedMemberOfShouldReplace,
 ) => {
   path.insertAfter(
     generateGlobalThisAssignmentExpressionsFromDeclaration(
@@ -84,7 +84,7 @@ export const handleDeclarationExport = (
 export const handleLocalReExport = (
   path: NodePath<t.ExportNamedDeclaration>,
   moduleKey: string,
-  shouldReplaceExport: ShouldReplaceExport,
+  shouldReplaceExport: ExportedMemberOfShouldReplace,
 ) => {
   const specifiers = path.node.specifiers;
   assertNodeTypes(
@@ -109,7 +109,7 @@ export const handleSourcedReExport = (
   path: NodePath<t.ExportNamedDeclaration>,
   moduleKey: string,
   targetModuleKey: string | null,
-  shouldReplaceExport: ShouldReplaceExport,
+  shouldReplaceExport: ExportedMemberOfShouldReplace,
 ) => {
   if (targetModuleKey == null) return;
   const specifiers = path.node.specifiers;
@@ -154,7 +154,7 @@ export const handleExportAll = (
 export const generateGlobalThisAssignmentExpressionsFromDeclaration = (
   declaration: t.Declaration,
   moduleKey: string,
-  shouldReplaceExport: ShouldReplaceExport,
+  shouldReplaceExport: ExportedMemberOfShouldReplace,
 ): t.AssignmentExpression[] => {
   if (
     !t.isVariableDeclaration(declaration) &&
@@ -268,6 +268,6 @@ const generateGlobalThisAssignmentExpression = (
 
 const shouldExportFilter = (
   name: string,
-  shouldReplaceExport: ShouldReplaceExport,
+  shouldReplaceExport: ExportedMemberOfShouldReplace,
 ): boolean =>
   shouldReplaceExport.type === "all" || shouldReplaceExport.member.has(name);

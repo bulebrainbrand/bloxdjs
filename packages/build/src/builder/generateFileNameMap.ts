@@ -1,7 +1,7 @@
-import type { ShouldReplaceExport } from "./exportAdder";
+import type { ExportedMemberOfShouldReplace } from "./exportAdder";
 
 export const generateFileNameMap = (
-  data: Map<string, ShouldReplaceExport>,
+  data: Map<string, ExportedMemberOfShouldReplace>,
 ): Map<string, string> => {
   let number = 0;
   const map = new Map<string, string>();
