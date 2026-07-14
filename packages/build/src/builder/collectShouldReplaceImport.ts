@@ -1,14 +1,20 @@
 import traverse, { type Visitor } from "@babel/traverse";
 import * as t from "@babel/types";
-import { getNameFromIdentifierOrStringLiteral, resolvePath } from "./utils";
+import {
+  getNameFromIdentifierOrStringLiteral,
+  isNpmPackage,
+  resolvePath,
+} from "./utils";
 import { getFileInfo } from "./getFileInfo";
 import { isErr, unwrap } from "../result";
 
 /**
  * must replace import with globalThis
  */
-export const collectShouldReplaceImports = (astMap: Map<string, t.File>) => {
-  const shouldReplaceExportFiles: Partial<
+export const collectShouldReplaceImportExports = (
+  astMap: Map<string, t.File>,
+) => {
+  const importedExporters: Partial<
     Record<string, { type: "part"; member: Set<string> } | { type: "all" }>
   > = {};
   const shouldReplaceImportFiles: Set<string> = new Set();
@@ -18,53 +24,61 @@ export const collectShouldReplaceImports = (astMap: Map<string, t.File>) => {
       const err = info.error;
       throw new TypeError(`${filePath} is not valid. file mode error:${err}`);
     }
+    // worldcode do not need to edit import/export
     if (unwrap(info).type === "worldcode") continue;
-    const result = collectShouldReplaceImport(ast, filePath);
-    for (const [exporter, obj] of result) {
-      if (shouldReplaceExportFiles[exporter] == null || obj.type === "all") {
-        shouldReplaceExportFiles[exporter] = obj;
+
+    const result = collectShouldReplaceExporter(ast);
+    for (const [rawExporter, obj] of result) {
+      const absolutedExporterPath = resolvePath(rawExporter, filePath);
+      if (importedExporters[absolutedExporterPath]?.type === "all") continue;
+      if (
+        importedExporters[absolutedExporterPath] == null ||
+        obj.type === "all"
+      ) {
+        importedExporters[absolutedExporterPath] = obj;
         continue;
       }
-      if (shouldReplaceExportFiles[exporter].type === "all") {
-        continue;
-      }
-      shouldReplaceExportFiles[exporter].member = shouldReplaceExportFiles[
-        exporter
+
+      importedExporters[absolutedExporterPath].member = importedExporters[
+        absolutedExporterPath
       ].member.union(obj.member);
     }
     if (result.size !== 0) {
       shouldReplaceImportFiles.add(filePath);
     }
   }
-  return { shouldReplaceImportFiles, shouldReplaceExportFiles };
+  return {
+    shouldReplaceImportFiles,
+    shouldReplaceExportFiles: importedExporters,
+  };
 };
-
-export const collectShouldReplaceImport = (ast: t.File, filePath: string) => {
+export type ImportedMemberData =
+  | { type: "part"; member: Set<string> }
+  | { type: "all" };
+export const collectShouldReplaceExporter = (
+  ast: t.File,
+): Map<string, ImportedMemberData> => {
   /**
    * keyはimport時の識別子
    */
-  const importMap: Map<
-    string,
-    { type: "part"; member: Set<string> } | { type: "all" }
-  > = new Map();
+  const importMap = new Map<string, ImportedMemberData>();
 
   const visitor: Visitor = {
     ImportDeclaration(importPath) {
       const result = extractImportMember(importPath.node);
 
-      if (result.type === "package") {
+      if (isNpmPackage(result.path)) {
         return;
       }
-      const id = resolvePath(result.path, filePath);
-      const value = importMap.get(id);
+      const value = importMap.get(result.path);
       if (value?.type === "all") {
         return;
       }
-      if (result.type === "every") {
-        importMap.set(id, { type: "all" });
+      if (result.type === "all") {
+        importMap.set(result.path, { type: "all" });
         return;
       }
-      importMap.set(id, {
+      importMap.set(result.path, {
         type: "part",
         member: result.member.union(value?.member ?? new Set()),
       });
@@ -78,10 +92,8 @@ export const extractImportMember = (
   node: t.ImportDeclaration,
 ):
   | { type: "some"; path: string; member: Set<string> }
-  | { type: "package" }
-  | { type: "every"; path: string } => {
+  | { type: "all"; path: string } => {
   const exporter = node.source.value;
-  if (!exporter.startsWith(".")) return { type: "package" };
   const member = [];
 
   for (const spec of node.specifiers) {
@@ -95,7 +107,7 @@ export const extractImportMember = (
         break;
       }
       case "ImportNamespaceSpecifier": {
-        return { type: "every", path: exporter };
+        return { type: "all", path: exporter };
       }
     }
   }

@@ -50,3 +50,10 @@ export function assertNodeTypes<T extends t.Node>(
 ): asserts nodes is T[] {
   if (!nodes.every(guard)) throw new TypeError(message);
 }
+
+/**
+ * use only  after resolved tsconfig path
+ * @param exporter
+ * @returns
+ */
+export const isNpmPackage = (exporter: string) => !exporter.startsWith(".");

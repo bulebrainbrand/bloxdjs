@@ -15,7 +15,12 @@ export const transfromTS = async (
     messages: await formatMessages(result.warnings, { kind: "warning" }),
   };
 };
-
+/**
+ *
+ * @param files - array of absoluted file path which is in temp dir.
+ * @param fs
+ * @returns - Array of Object which contain esbuild error message array and absoluted file path
+ */
 export const transfromTSFiles = async (
   files: string[],
   fs: FullFsClient,
@@ -29,9 +34,9 @@ export const transfromTSFiles = async (
     files.map(async (filePath) => {
       try {
         const content = (await fs.promises.readFile(filePath)).toString();
-        const transfromed = await transfromTS(content);
-        await fs.promises.writeFile(filePath, transfromed.code);
-        return { path: filePath, messages: transfromed.messages };
+        const transfromedCode = await transfromTS(content);
+        await fs.promises.writeFile(filePath, transfromedCode.code);
+        return { path: filePath, messages: transfromedCode.messages };
       } catch (error) {
         console.error(`failed convert ${filePath}`, error);
         throw new Error("failed convert to JS", { cause: error });
