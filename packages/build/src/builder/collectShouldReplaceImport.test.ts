@@ -6,6 +6,8 @@ import {
   extractImportMember,
 } from "./collectShouldReplaceImport";
 import { parse } from "@babel/parser";
+import { fs, vol } from "memfs";
+import { beforeEach } from "node:test";
 describe("test extractImportMember", () => {
   it("when only ImportNamespaceSpecifier, return type:all", () => {
     const ast = t.importDeclaration(
@@ -121,19 +123,31 @@ describe("test collectShouldReplaceExporter", () => {
 });
 
 describe("test collectShouldReplaceImportExports", () => {
+  beforeEach(() => {
+    vol.reset();
+  });
   it("When import codeblock, collect that", () => {
-    const foo = parse(`"use codeblock{foo}";import { bar } from "./bar.ts"`, {
+    const fooText = `"use codeblock{foo}";import { bar } from "./bar.ts"`;
+    const fooAst = parse(fooText, {
       sourceType: "module",
     });
-    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+    const barText = `"use worldcode";export const bar = "baz"`;
+    const bar = parse(barText, {
       sourceType: "module",
+    });
+    vol.fromJSON({
+      "src/foo.ts": fooText,
+      "src/bar.ts": barText,
     });
     expect(
+      // @ts-ignore
       collectShouldReplaceImportExports(
         new Map([
-          ["src/foo.ts", foo],
+          ["src/foo.ts", fooAst],
           ["src/bar.ts", bar],
         ]),
+        // @ts-ignore
+        fs,
       ),
     ).toStrictEqual({
       shouldReplaceImportFiles: new Set(["src/foo.ts"]),
@@ -149,18 +163,26 @@ describe("test collectShouldReplaceImportExports", () => {
     });
   });
   it("when import codeblock even diffient directory level, collect that", () => {
-    const foo = parse(`"use codeblock{foo}";import { bar } from "../bar.ts"`, {
+    const fooText = `"use codeblock{foo}";import { bar } from "../bar.ts"`;
+    const fooAst = parse(fooText, {
       sourceType: "module",
     });
-    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+    const barText = `"use worldcode";export const bar = "baz"`;
+    const barAst = parse(barText, {
       sourceType: "module",
+    });
+    vol.fromJSON({
+      "src/dir/foo.ts": fooText,
+      "src/bar.ts": barText,
     });
     expect(
       collectShouldReplaceImportExports(
         new Map([
-          ["src/dir/foo.ts", foo],
-          ["src/bar.ts", bar],
+          ["src/dir/foo.ts", fooAst],
+          ["src/bar.ts", barAst],
         ]),
+        // @ts-expect-error
+        fs,
       ),
     ).toStrictEqual({
       shouldReplaceImportFiles: new Set(["src/dir/foo.ts"]),
@@ -176,21 +198,26 @@ describe("test collectShouldReplaceImportExports", () => {
     });
   });
   it("when import codeblock even diffient directory level, collect that", () => {
-    const foo = parse(
-      `"use codeblock{foo}";import { bar } from "./dir/bar.ts"`,
-      {
-        sourceType: "module",
-      },
-    );
-    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+    const fooText = `"use codeblock{foo}";import { bar } from "./dir/bar.ts"`;
+    const fooAst = parse(fooText, {
       sourceType: "module",
+    });
+    const barText = `"use worldcode";export const bar = "baz"`;
+    const barAst = parse(barText, {
+      sourceType: "module",
+    });
+    vol.fromJSON({
+      "src/foo.ts": fooText,
+      "src/dir/bar.ts": barText,
     });
     expect(
       collectShouldReplaceImportExports(
         new Map([
-          ["src/foo.ts", foo],
-          ["src/dir/bar.ts", bar],
+          ["src/foo.ts", fooAst],
+          ["src/dir/bar.ts", barAst],
         ]),
+        // @ts-ignore
+        fs,
       ),
     ).toStrictEqual({
       shouldReplaceImportFiles: new Set(["src/foo.ts"]),
@@ -206,11 +233,17 @@ describe("test collectShouldReplaceImportExports", () => {
     });
   });
   it("when worldcode import, does not collect that", () => {
-    const foo = parse(`"use worldcode";import { bar } from "./bar.ts"`, {
+    const fooText = `"use worldcode";import { bar } from "./bar.ts"`;
+    const foo = parse(fooText, {
       sourceType: "module",
     });
-    const bar = parse(`"use worldcode";export const bar = "baz"`, {
+    const barText = `"use worldcode";export const bar = "baz"`;
+    const bar = parse(barText, {
       sourceType: "module",
+    });
+    vol.fromJSON({
+      "src/foo.ts": fooText,
+      "src/bar.ts": barText,
     });
     expect(
       collectShouldReplaceImportExports(
@@ -218,6 +251,8 @@ describe("test collectShouldReplaceImportExports", () => {
           ["src/foo.ts", foo],
           ["src/bar.ts", bar],
         ]),
+        // @ts-ignore
+        fs,
       ),
     ).toStrictEqual({
       shouldReplaceImportFiles: new Set([]),
@@ -225,17 +260,22 @@ describe("test collectShouldReplaceImportExports", () => {
     });
   });
   it("when one module is imported by 2 module, collect all member name which imported modules", () => {
-    const foo = parse(`"use codeblock{foo}";import { bar } from "./bar.ts"`, {
+    const fooText = `"use codeblock{foo}";import { bar } from "./bar.ts"`;
+    const foo = parse(fooText, {
       sourceType: "module",
     });
-    const bar = parse(
-      `"use worldcode";export const bar = "baz";export const qux = "corge";`,
-      {
-        sourceType: "module",
-      },
-    );
-    const piyo = parse(`"use codeblock{piyo}";import {qux} from "./bar.ts"`, {
+    const bartext = `"use worldcode";export const bar = "baz";export const qux = "corge";`;
+    const bar = parse(bartext, {
       sourceType: "module",
+    });
+    const piyoText = `"use codeblock{piyo}";import {qux} from "./bar.ts"`;
+    const piyo = parse(piyoText, {
+      sourceType: "module",
+    });
+    vol.fromJSON({
+      "src/foo.ts": fooText,
+      "src/bar.ts": bartext,
+      "src/piyo.ts": piyoText,
     });
     expect(
       collectShouldReplaceImportExports(
@@ -244,6 +284,8 @@ describe("test collectShouldReplaceImportExports", () => {
           ["src/bar.ts", bar],
           ["src/piyo.ts", piyo],
         ]),
+        // @ts-ignore
+        fs,
       ),
     ).toStrictEqual({
       shouldReplaceImportFiles: new Set(["src/foo.ts", "src/piyo.ts"]),
