@@ -35,6 +35,7 @@ export const build = async (
   const tsconfig = getTsconfig();
   if (tsconfig.path) {
     copyFileToTempDirectory(tsconfig.path, fs, cwd);
+    if (config.debug) console.log(`tsconfig path: ${tsconfig.path}`);
   }
   console.log(`[x] loaded tsconfig`);
   await transfromTSFiles(paths, fs);
@@ -46,7 +47,8 @@ export const build = async (
    */
   const astMap = new Map(zip(paths, asts));
   console.log(`[x] created ast map`);
-
+  if (config.debug)
+    console.log(`astmap keys: ${Array.from(astMap.keys()).join("\n")}`);
   const tempTsconfigPath = tsconfig.path
     ? convertPathToInnerTempDirectory(tsconfig.path, cwd)
     : undefined;
@@ -55,12 +57,30 @@ export const build = async (
     shouldReplaceImportFiles: ImporterFilesToReplace,
   } = collectShouldReplaceImportExports(astMap, fs, tempTsconfigPath);
   console.log(
-    `[x] collect should replace import/exports. start transfrom import ${ImporterFilesToReplace.size} export ${Array.from(ExporterFilesToReplace.keys()).join("\n")}`,
+    `[x] collect should replace import/exports. start transfrom import ${ImporterFilesToReplace.size} export ${ExporterFilesToReplace.size}`,
   );
+  if (config.debug) {
+    console.log(
+      `ExporterFilesToReplace:\n ${Array.from(
+        ExporterFilesToReplace.entries().map(
+          ([string, data]) =>
+            `${string}: ${data.type === "all" ? "all" : Array.from(data.member.keys()).join(" , ")}`,
+        ),
+      ).join("\n")}`,
+    );
+    console.log(
+      `ImporterFilesToReplace ${Array.from(ImporterFilesToReplace.keys()).join("\n")}`,
+    );
+  }
   const fileNameMap = generateFileNameMap(ExporterFilesToReplace);
   for (const [path, ast] of astMap) {
+    if (config.debug) console.log(`start convert ${path}`);
     if (ExporterFilesToReplace.has(path)) {
       const ExportMemberToReplace = ExporterFilesToReplace.get(path)!;
+      if (config.debug)
+        console.log(
+          `replace export members: ${ExportMemberToReplace.type === "part" ? Array.from(ExportMemberToReplace.member).join("\n") : "all"}`,
+        );
       addGlobalThisExport(
         ast,
         path,
@@ -74,6 +94,7 @@ export const build = async (
       );
     }
     if (ImporterFilesToReplace.has(path)) {
+      if (config.debug) console.log(`replace import`);
       replaceImport(ast, path, fileNameMap, fs, tsconfig.path);
     }
     fs.writeFileSync(path, generate(ast).code);
@@ -89,6 +110,10 @@ export const build = async (
       )
       .map(([path, info]) => [path, info.name]),
   );
+  if (config.debug)
+    console.log(
+      `entryCodeBlockFileToNameMap: \n${Array.from(entryCodeBlockFileToNameMap.entries().map(([file, type]) => `${file}: ${type}`)).join("\n")}`,
+    );
   const worldcodeEntry = convertPathToInnerTempDirectory(
     path.resolve(cwd, config.worldcode.entry),
     cwd,
