@@ -57,7 +57,7 @@ export const getFileInfo = (ast: t.File): Result<FileInfo, FileInfoError> => {
   return ok({ type: "codeblock", name: codeblockName });
 };
 
-export const getFileInfos = (
+export const getEachFileInfo = (
   astMap: Map<string, t.File>,
 ): Map<string, FileInfo> => {
   const map: Map<string, FileInfo> = new Map();
