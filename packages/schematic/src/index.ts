@@ -13,6 +13,14 @@ export interface Schematic {
   pos: [number, number, number];
   size: [number, number, number];
   chunks: Chunk[];
+  blockdatas: BlockData[];
+}
+
+export interface BlockData {
+  blockX: number;
+  blockY: number;
+  blockZ: number;
+  blockdataStr: string;
 }
 
 export interface WriteResult {
@@ -48,7 +56,7 @@ interface AvroSchematic {
   globalX: number;
   globalY: number;
   globalZ: number;
-  wtvthisis: Buffer;
+  tail_magic: Buffer;
 }
 
 // ---- スキーマ定義 ----
@@ -199,7 +207,7 @@ export function splitBloxdschem(avro: AvroSchematic): {
       globalX: 0,
       globalY: 0,
       globalZ: 0,
-      wtvthisis: avro.wtvthisis,
+      tail_magic: avro["tail_magic"],
     });
     currOffset += sliceSize;
   }
@@ -222,11 +230,12 @@ export function parseBloxdschem(buffer: Uint8Array<ArrayBuffer>): Schematic {
       pos: [avroChunk.x, avroChunk.y, avroChunk.z],
       blocks: decodeBlocks(avroChunk.blocks),
     })),
+    blockdatas: avro.blockdatas,
   };
 }
 
 const HEADER_DEFAULT = Buffer.from([0x04, 0x00, 0x00, 0x00]);
-const WTVTHISIS_DEFAULT = Buffer.from([0x00, 0x00]);
+const TAIL_MAGIC = Buffer.from([0x00, 0x00]);
 export function writeBloxdschem(schem: Schematic): Uint8Array<ArrayBufferLike> {
   const avro: AvroSchematic = {
     headers: HEADER_DEFAULT,
@@ -243,11 +252,11 @@ export function writeBloxdschem(schem: Schematic): Uint8Array<ArrayBufferLike> {
       z: chunk.pos[2],
       blocks: encodeBlocks(chunk.blocks),
     })),
-    blockdatas: [],
+    blockdatas: schem.blockdatas,
     globalX: 0,
     globalY: 0,
     globalZ: 0,
-    wtvthisis: WTVTHISIS_DEFAULT,
+    tail_magic: TAIL_MAGIC,
   };
 
   return fullSchema.toBuffer(avro);
