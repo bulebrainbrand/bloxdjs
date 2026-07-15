@@ -7,9 +7,6 @@
             "path": "./packages/build/tsconfig.json"
         },
         {
-            "path": "./packages/build-test/tsconfig.json"
-        },
-        {
             "path": "./packages/lint/tsconfig.json"
         }
     ],
