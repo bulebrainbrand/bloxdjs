@@ -13,6 +13,14 @@ export interface Schematic {
   pos: [number, number, number];
   size: [number, number, number];
   chunks: Chunk[];
+  blockdatas: BlockData[];
+}
+
+export interface BlockData {
+  blockX: number;
+  blockY: number;
+  blockZ: number;
+  blockdataStr: string;
 }
 
 export interface WriteResult {
@@ -48,7 +56,7 @@ interface AvroSchematic {
   globalX: number;
   globalY: number;
   globalZ: number;
-  wtvthisis: Buffer;
+  tail_magic: Buffer;
 }
 
 // ---- スキーマ定義 ----
@@ -179,9 +187,26 @@ export function splitBloxdschem(avro: AvroSchematic): {
   const schems: AvroSchematic[] = [];
   let currOffset = 0;
 
+  let remainingBlockdatas = avro.blockdatas.slice();
+
   while (true) {
     const chunksSlice = avro.chunks.splice(0, zySize * sliceSize);
     if (chunksSlice.length === 0) break;
+
+    const chunkCountX = chunksSlice.length / zySize;
+    const blockXStart = currOffset * 32;
+    const blockXEnd = blockXStart + chunkCountX * 32;
+
+    const blockdatasSlice: AvroBlockdata[] = [];
+    const stillRemaining: AvroBlockdata[] = [];
+    for (const bd of remainingBlockdatas) {
+      if (bd.blockX >= blockXStart && bd.blockX < blockXEnd) {
+        blockdatasSlice.push({ ...bd, blockX: bd.blockX - blockXStart });
+      } else {
+        stillRemaining.push(bd);
+      }
+    }
+    remainingBlockdatas = stillRemaining;
 
     for (const chunk of chunksSlice) chunk.x -= currOffset;
 
@@ -195,14 +220,22 @@ export function splitBloxdschem(avro: AvroSchematic): {
       sizeY: avro.sizeY,
       sizeZ: avro.sizeZ,
       chunks: chunksSlice,
-      blockdatas: [],
+      blockdatas: blockdatasSlice,
       globalX: 0,
       globalY: 0,
       globalZ: 0,
-      wtvthisis: avro.wtvthisis,
+      tail_magic: avro["tail_magic"],
     });
     currOffset += sliceSize;
   }
+
+  if (remainingBlockdatas.length > 0) {
+    throw new Error(
+      `out of range blockdata amount:${remainingBlockdatas.length}\n` +
+        JSON.stringify(remainingBlockdatas),
+    );
+  }
+
   return { schems, sliceSize };
 }
 
@@ -222,11 +255,12 @@ export function parseBloxdschem(buffer: Uint8Array<ArrayBuffer>): Schematic {
       pos: [avroChunk.x, avroChunk.y, avroChunk.z],
       blocks: decodeBlocks(avroChunk.blocks),
     })),
+    blockdatas: avro.blockdatas,
   };
 }
 
 const HEADER_DEFAULT = Buffer.from([0x04, 0x00, 0x00, 0x00]);
-const WTVTHISIS_DEFAULT = Buffer.from([0x00, 0x00]);
+const TAIL_MAGIC = Buffer.from([0x00, 0x00]);
 export function writeBloxdschem(schem: Schematic): Uint8Array<ArrayBufferLike> {
   const avro: AvroSchematic = {
     headers: HEADER_DEFAULT,
@@ -243,11 +277,11 @@ export function writeBloxdschem(schem: Schematic): Uint8Array<ArrayBufferLike> {
       z: chunk.pos[2],
       blocks: encodeBlocks(chunk.blocks),
     })),
-    blockdatas: [],
+    blockdatas: schem.blockdatas,
     globalX: 0,
     globalY: 0,
     globalZ: 0,
-    wtvthisis: WTVTHISIS_DEFAULT,
+    tail_magic: TAIL_MAGIC,
   };
 
   return fullSchema.toBuffer(avro);
