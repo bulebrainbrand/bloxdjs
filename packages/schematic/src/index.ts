@@ -105,8 +105,8 @@ const fullSchema = avsc.Type.forSchema({
     { name: "globalY", type: "int", default: 0 },
     { name: "globalZ", type: "int", default: 0 },
     {
-      name: "wtvthisis",
-      type: { type: "fixed", name: "", size: 2 },
+      name: "tail_magic",
+      type: { type: "fixed", name: "tail_magic_element", size: 2 },
       default: "\u0000\u0000",
     },
   ],
