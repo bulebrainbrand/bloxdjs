@@ -1,7 +1,12 @@
 import type { StrictConfig } from "../config";
 import type { FullFsClient } from "../types/fs";
 import { getIncludesFiles } from "./getIncludesFiles";
-import { createTempDir, convertPathToTemp, getTempDir } from "./createTempDir";
+import {
+  copyToTempDirectory,
+  convertPathToInnerTempDirectory,
+  getTempDirectory,
+  copyFileToTempDirectory,
+} from "./copyToTempDirectory";
 import { transfromTSFiles } from "./transfromTSToJS";
 import { parseFiles } from "./parse";
 import { zip } from "../utils/zip";
@@ -25,9 +30,12 @@ export const build = async (
     fs,
   );
   console.log(`[x] resolved imnclude files: ${includeFiles.length} file`);
-  const paths = createTempDir(includeFiles, cwd, fs);
+  const paths = copyToTempDirectory(includeFiles, cwd, fs);
   console.log(`[x] created temp dir`);
   const tsconfig = getTsconfig();
+  if (tsconfig.path) {
+    copyFileToTempDirectory(tsconfig.path, fs, cwd);
+  }
   console.log(`[x] loaded tsconfig`);
   await transfromTSFiles(paths, fs);
   console.log(`[x] transfromed to JavaScript`);
@@ -40,7 +48,7 @@ export const build = async (
   console.log(`[x] created ast map`);
 
   const tempTsconfigPath = tsconfig.path
-    ? convertPathToTemp(tsconfig.path, cwd)
+    ? convertPathToInnerTempDirectory(tsconfig.path, cwd)
     : undefined;
   const {
     shouldReplaceExportFiles: ExporterFilesToReplace,
@@ -81,7 +89,7 @@ export const build = async (
       )
       .map(([path, info]) => [path, info.name]),
   );
-  const worldcodeEntry = convertPathToTemp(
+  const worldcodeEntry = convertPathToInnerTempDirectory(
     path.resolve(cwd, config.worldcode.entry),
     cwd,
   );
@@ -93,7 +101,7 @@ export const build = async (
   );
   console.log(`[x] packed files`);
   if (!config.debug) {
-    fs.rmSync(getTempDir(cwd), { recursive: true, force: true });
+    fs.rmSync(getTempDirectory(cwd), { recursive: true, force: true });
     console.log(`[x] clear temp files`);
   }
 };
