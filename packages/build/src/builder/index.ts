@@ -53,13 +53,20 @@ export const build = async (
   for (const [path, ast] of astMap) {
     if (ExporterFilesToReplace.has(path)) {
       const ExportMemberToReplace = ExporterFilesToReplace.get(path)!;
-      addGlobalThisExport(ast, path, fileNameMap, ExportMemberToReplace);
+      addGlobalThisExport(
+        ast,
+        path,
+        fileNameMap,
+        ExportMemberToReplace,
+        fs,
+        tsconfig.path,
+      );
       console.log(
         `[x] converted ${ExportMemberToReplace.type === "all" ? "all" : ExportMemberToReplace.member.size} export`,
       );
     }
     if (ImporterFilesToReplace.has(path)) {
-      replaceImport(ast, path, fileNameMap);
+      replaceImport(ast, path, fileNameMap, fs, tsconfig.path);
     }
     fs.writeFileSync(path, generate(ast).code);
     console.log(`[x] coverted ${path}`);
@@ -78,9 +85,15 @@ export const build = async (
     path.resolve(cwd, config.worldcode.entry),
     cwd,
   );
-  await pack(entryCodeBlockFileToNameMap, worldcodeEntry, config.minify.enable);
+  await pack(
+    entryCodeBlockFileToNameMap,
+    worldcodeEntry,
+    config.minify.enable,
+    tsconfig.path,
+  );
   console.log(`[x] packed files`);
-  if (config.debug)
+  if (!config.debug) {
     fs.rmSync(getTempDir(cwd), { recursive: true, force: true });
-  console.log(`[x] clear temp files`);
+    console.log(`[x] clear temp files`);
+  }
 };
