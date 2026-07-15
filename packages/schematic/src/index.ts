@@ -187,9 +187,26 @@ export function splitBloxdschem(avro: AvroSchematic): {
   const schems: AvroSchematic[] = [];
   let currOffset = 0;
 
+  let remainingBlockdatas = avro.blockdatas.slice();
+
   while (true) {
     const chunksSlice = avro.chunks.splice(0, zySize * sliceSize);
     if (chunksSlice.length === 0) break;
+
+    const chunkCountX = chunksSlice.length / zySize;
+    const blockXStart = currOffset * 32;
+    const blockXEnd = blockXStart + chunkCountX * 32;
+
+    const blockdatasSlice: AvroBlockdata[] = [];
+    const stillRemaining: AvroBlockdata[] = [];
+    for (const bd of remainingBlockdatas) {
+      if (bd.blockX >= blockXStart && bd.blockX < blockXEnd) {
+        blockdatasSlice.push({ ...bd, blockX: bd.blockX - blockXStart });
+      } else {
+        stillRemaining.push(bd);
+      }
+    }
+    remainingBlockdatas = stillRemaining;
 
     for (const chunk of chunksSlice) chunk.x -= currOffset;
 
@@ -203,7 +220,7 @@ export function splitBloxdschem(avro: AvroSchematic): {
       sizeY: avro.sizeY,
       sizeZ: avro.sizeZ,
       chunks: chunksSlice,
-      blockdatas: [],
+      blockdatas: blockdatasSlice,
       globalX: 0,
       globalY: 0,
       globalZ: 0,
@@ -211,6 +228,14 @@ export function splitBloxdschem(avro: AvroSchematic): {
     });
     currOffset += sliceSize;
   }
+
+  if (remainingBlockdatas.length > 0) {
+    throw new Error(
+      `out of range blockdata amount:${remainingBlockdatas.length}\n` +
+        JSON.stringify(remainingBlockdatas),
+    );
+  }
+
   return { schems, sliceSize };
 }
 
