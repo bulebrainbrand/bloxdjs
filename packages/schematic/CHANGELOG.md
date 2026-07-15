@@ -1,5 +1,11 @@
 # @bloxdjs/schematic
 
+## 0.0.3
+
+### Patch Changes
+
+- [#37](https://github.com/bulebrainbrand/bloxdjs/pull/37) [`d3b6510`](https://github.com/bulebrainbrand/bloxdjs/commit/d3b65104dbbff8b7705e275c64dbb2fa0638b6e0) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add blockdata
+
 ## 0.0.2
 
 ### Patch Changes
