@@ -1,5 +1,11 @@
 # @bloxdjs/build
 
+## 0.0.7
+
+### Patch Changes
+
+- [#24](https://github.com/bulebrainbrand/bloxdjs/pull/24) [`8b029ea`](https://github.com/bulebrainbrand/bloxdjs/commit/8b029eaa948b184c7602d87ed01b589567690783) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - fix: change enhanced-resolve import method to default import
+
 ## 0.0.6
 
 ### Patch Changes
