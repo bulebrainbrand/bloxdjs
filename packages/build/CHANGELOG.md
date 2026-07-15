@@ -1,5 +1,11 @@
 # @bloxdjs/build
 
+## 0.0.10
+
+### Patch Changes
+
+- [#32](https://github.com/bulebrainbrand/bloxdjs/pull/32) [`2b551b4`](https://github.com/bulebrainbrand/bloxdjs/commit/2b551b4e5ff6b91d5199fed69ba625c16249d26d) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - fix: resolvePath return value replace "\" with "/"
+
 ## 0.0.9
 
 ### Patch Changes
