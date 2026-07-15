@@ -4,6 +4,7 @@ export const pack = async (
   entryCodeBlock: Map<string, string>,
   entryWorldcode: string,
   minify: boolean,
+  tsconfigPath?: string,
 ) => {
   const buildOptions: Parameters<typeof build>[0] = {
     entryPoints: [entryWorldcode],
@@ -12,6 +13,7 @@ export const pack = async (
     platform: "neutral",
     outfile: "dist/worldcode.js",
     minify,
+    tsconfig: tsconfigPath,
   };
   await build(buildOptions);
   for (const [entryPath, name] of entryCodeBlock) {
