@@ -20,8 +20,8 @@ export const resolvePath = (
     tsconfig: tsconfigPath,
     useSyncFileSystemCalls: true,
   });
-
-  return resolver.resolveSync(path.dirname(importer), exporter);
+  const result = resolver.resolveSync(path.dirname(importer), exporter);
+  return typeof result === "string" ? result.replaceAll("\\", "/") : result;
 };
 
 export const resolvePathOrThrowError = (
