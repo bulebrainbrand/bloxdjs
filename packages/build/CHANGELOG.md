@@ -1,5 +1,13 @@
 # @bloxdjs/build
 
+## 0.0.9
+
+### Patch Changes
+
+- [#29](https://github.com/bulebrainbrand/bloxdjs/pull/29) [`60ab2d4`](https://github.com/bulebrainbrand/bloxdjs/commit/60ab2d4c9f36e58e36f7469e2e00ef0cfe53479d) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add debug message on build phase
+
+- [#31](https://github.com/bulebrainbrand/bloxdjs/pull/31) [`3bc0f9a`](https://github.com/bulebrainbrand/bloxdjs/commit/3bc0f9a4d3b52af5322436d733bab60d6b9514e0) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - fix: change some call that include tsconfig to inner temp tsconfig path instead raw tsconfig path
+
 ## 0.0.8
 
 ### Patch Changes
