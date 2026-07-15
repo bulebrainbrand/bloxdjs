@@ -1,7 +1,9 @@
 import * as t from "@babel/types";
-import { ResolverFactory, type FileSystem } from "enhanced-resolve";
+import pkg, { type FileSystem } from "enhanced-resolve";
 import { GLOBALTHIS_MODULE_INTERNAL_PROPERTY_NAME } from "./constants";
 import path from "path";
+
+const { ResolverFactory } = pkg;
 export const getNameFromIdentifierOrStringLiteral = (
   node: t.Identifier | t.StringLiteral,
 ): string => (t.isStringLiteral(node) ? node.value : node.name);
