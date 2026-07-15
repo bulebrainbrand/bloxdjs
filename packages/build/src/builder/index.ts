@@ -12,7 +12,7 @@ import { addGlobalThisExport } from "./exportAdder";
 import { replaceImport } from "./importReplacer";
 import generate from "@babel/generator";
 import { pack } from "./packer";
-import { getFileInfos } from "./getFileInfo";
+import { getEachFileInfo } from "./getFileInfo";
 import path from "node:path";
 import { resolveImportPathAsts } from "./resolveTsconfigPath";
 export const build = async (
@@ -49,29 +49,31 @@ export const build = async (
     );
     console.log(`[x] replaced typescript path option import`);
   }
-  const { shouldReplaceExportFiles, shouldReplaceImportFiles } =
-    collectShouldReplaceImportExports(astMap);
+  const {
+    shouldReplaceExportFiles: ExporterFilesToReplace,
+    shouldReplaceImportFiles: ImporterFilesToReplace,
+  } = collectShouldReplaceImportExports(astMap);
   console.log(
-    `[x] collect should replace import/exports. start transfrom import ${shouldReplaceImportFiles.size} export ${Array.from(shouldReplaceExportFiles.keys()).join("\n")}`,
+    `[x] collect should replace import/exports. start transfrom import ${ImporterFilesToReplace.size} export ${Array.from(ExporterFilesToReplace.keys()).join("\n")}`,
   );
-  const fileNameMap = generateFileNameMap(shouldReplaceExportFiles);
+  const fileNameMap = generateFileNameMap(ExporterFilesToReplace);
   for (const [path, ast] of astMap) {
-    if (shouldReplaceExportFiles.has(path)) {
-      const shouldReplaceExport = shouldReplaceExportFiles.get(path)!;
-      addGlobalThisExport(ast, path, fileNameMap, shouldReplaceExport);
+    if (ExporterFilesToReplace.has(path)) {
+      const ExportMemberToReplace = ExporterFilesToReplace.get(path)!;
+      addGlobalThisExport(ast, path, fileNameMap, ExportMemberToReplace);
       console.log(
-        `[x] converted ${shouldReplaceExport.type === "all" ? "all" : shouldReplaceExport.member.size} export`,
+        `[x] converted ${ExportMemberToReplace.type === "all" ? "all" : ExportMemberToReplace.member.size} export`,
       );
     }
-    if (shouldReplaceImportFiles.has(path)) {
+    if (ImporterFilesToReplace.has(path)) {
       replaceImport(ast, path, fileNameMap);
     }
     fs.writeFileSync(path, generate(ast).code);
     console.log(`[x] coverted ${path}`);
   }
-  const fileInfos = getFileInfos(astMap);
-  const codeBlockEntryMap = new Map(
-    fileInfos
+  const filesInfo = getEachFileInfo(astMap);
+  const entryCodeBlockFileToNameMap = new Map(
+    filesInfo
       .entries()
       .filter(
         (arg): arg is [string, { type: "codeblock"; name: string }] =>
@@ -79,11 +81,11 @@ export const build = async (
       )
       .map(([path, info]) => [path, info.name]),
   );
-  await pack(
-    codeBlockEntryMap,
-    convertPathToTemp(path.resolve(cwd, config.worldcode.entry), cwd),
-    config.minify.enable,
+  const worldcodeEntry = convertPathToTemp(
+    path.resolve(cwd, config.worldcode.entry),
+    cwd,
   );
+  await pack(entryCodeBlockFileToNameMap, worldcodeEntry, config.minify.enable);
   console.log(`[x] packed files`);
   if (config.debug)
     fs.rmSync(getTempDir(cwd), { recursive: true, force: true });
