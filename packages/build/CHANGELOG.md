@@ -1,5 +1,11 @@
 # @bloxdjs/build
 
+## 0.0.8
+
+### Patch Changes
+
+- [#27](https://github.com/bulebrainbrand/bloxdjs/pull/27) [`e73b5d5`](https://github.com/bulebrainbrand/bloxdjs/commit/e73b5d5d3290f5b7726705f33b4177bb7187561f) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - fix: copy tsconfig.json to temp directory and refactor temp directory functions
+
 ## 0.0.7
 
 ### Patch Changes
