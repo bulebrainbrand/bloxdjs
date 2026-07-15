@@ -15,7 +15,7 @@ catalog:
   "@typescript-eslint/rule-tester": ^8.62.1
   "@typescript-eslint/utils": ^8.62.1
   "@typescript/native-preview": 7.0.0-dev.20260626.1
-  "@vitest/coverage-v8": 4.1.9
+  "@vitest/coverage-v8": 4.1.10
   enhanced-resolve: ^5.24.2
   esbuild: ^0.28.1
   glob: ^13.0.6
@@ -25,6 +25,6 @@ catalog:
   typescript: ^6.0.3
   unconfig: ^7.5.0
   valibot: ^1.4.1
-  vite-plus: ^0.2.1
+  vite-plus: ^0.2.4
 
 catalogMode: prefer

@@ -23,7 +23,7 @@
   "scripts": {
     "build": "pnpm exec vp pack",
     "dev": "pnpm exec vp test --watch",
-    "test": "pnpm exec vp test --coverage",
+    "test": "pnpm exec tsc --noEmit && pnpm exec vp test --coverage",
     "link": "",
     "prepublishOnly": "pnpm exec vp run build"
   },
