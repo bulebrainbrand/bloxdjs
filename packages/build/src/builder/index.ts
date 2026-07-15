@@ -87,7 +87,7 @@ export const build = async (
         fileNameMap,
         ExportMemberToReplace,
         fs,
-        tsconfig.path,
+        tempTsconfigPath,
       );
       console.log(
         `[x] converted ${ExportMemberToReplace.type === "all" ? "all" : ExportMemberToReplace.member.size} export`,
@@ -95,7 +95,7 @@ export const build = async (
     }
     if (ImporterFilesToReplace.has(path)) {
       if (config.debug) console.log(`replace import`);
-      replaceImport(ast, path, fileNameMap, fs, tsconfig.path);
+      replaceImport(ast, path, fileNameMap, fs, tempTsconfigPath);
     }
     fs.writeFileSync(path, generate(ast).code);
     console.log(`[x] coverted ${path}`);
@@ -122,7 +122,7 @@ export const build = async (
     entryCodeBlockFileToNameMap,
     worldcodeEntry,
     config.minify.enable,
-    tsconfig.path,
+    tempTsconfigPath,
   );
   console.log(`[x] packed files`);
   if (!config.debug) {
