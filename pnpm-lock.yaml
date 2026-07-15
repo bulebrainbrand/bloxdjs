@@ -25,7 +25,7 @@ catalogs:
       specifier: ^2.31.0
       version: 2.31.0
     '@types/node':
-      specifier: ^26.0.1
+      specifier: ^26.1.1
       version: 26.1.1
     '@typescript-eslint/rule-tester':
       specifier: ^8.62.1
@@ -39,6 +39,9 @@ catalogs:
     '@vitest/coverage-v8':
       specifier: 4.1.10
       version: 4.1.10
+    avsc:
+      specifier: ^5.7.9
+      version: 5.7.9
     enhanced-resolve:
       specifier: ^5.24.2
       version: 5.24.2
@@ -149,6 +152,16 @@ importers:
       '@typescript-eslint/utils':
         specifier: 'catalog:'
         version: 8.64.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3)
+
+  packages/schematic:
+    dependencies:
+      avsc:
+        specifier: 'catalog:'
+        version: 5.7.9
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
 
 packages:
 
@@ -1397,6 +1410,10 @@ packages:
 
   ast-v8-to-istanbul@1.0.4:
     resolution: {integrity: sha512-0bC0/4bTSrnwdhU3IsZDwEdojvuPrSg59OYZfKsLRtJZ0u8VBx9DebfqqG8bRdCC0I7vjgxmPi41P0lpkhJHtA==}
+
+  avsc@5.7.9:
+    resolution: {integrity: sha512-yOA4wFeI7ET3v32Di/sUybQ+ttP20JHSW3mxLuNGeO0uD6PPcvLrIQXSvy/rhJOWU5JrYh7U4OHplWMmtAtjMg==}
+    engines: {node: '>=0.11'}
 
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
@@ -3407,6 +3424,8 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
       estree-walker: 3.0.3
       js-tokens: 10.0.0
+
+  avsc@5.7.9: {}
 
   balanced-match@4.0.4: {}
 

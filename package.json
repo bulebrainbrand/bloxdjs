@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "p:b": "pnpm -F @bloxdjs/build"
+    "p:b": "pnpm -F @bloxdjs/build",
+    "p:s": "pnpm -F @bloxdjs/schematic"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
