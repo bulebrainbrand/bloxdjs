@@ -3,17 +3,19 @@ import * as t from "@babel/types";
 import {
   getNameFromIdentifierOrStringLiteral,
   isNpmPackage,
-  resolvePath,
+  resolvePathOrThrowError,
 } from "./utils";
 import { getFileInfo } from "./getFileInfo";
 import { isErr, unwrap } from "../result";
 import type { ExportedMemberOfShouldReplace } from "./exportAdder";
-
+import type { FileSystem } from "enhanced-resolve";
 /**
  * must replace import with globalThis
  */
 export const collectShouldReplaceImportExports = (
   astMap: Map<string, t.File>,
+  fs: FileSystem,
+  tsconfigPath?: string,
 ) => {
   const importedExporters: Map<string, ExportedMemberOfShouldReplace> =
     new Map();
@@ -29,7 +31,12 @@ export const collectShouldReplaceImportExports = (
 
     const result = collectShouldReplaceExporter(ast);
     for (const [rawExporter, obj] of result) {
-      const absolutedExporterPath = resolvePath(rawExporter, filePath);
+      const absolutedExporterPath = resolvePathOrThrowError(
+        rawExporter,
+        filePath,
+        fs,
+        tsconfigPath,
+      );
       const value = importedExporters.get(absolutedExporterPath);
       if (value?.type === "all") continue;
       if (value === undefined || obj.type === "all") {

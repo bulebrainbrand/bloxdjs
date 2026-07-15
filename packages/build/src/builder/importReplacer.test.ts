@@ -9,80 +9,91 @@ import {
 import { parse } from "@babel/parser";
 import generate from "@babel/generator";
 import * as t from "@babel/types";
+import { beforeEach } from "node:test";
+import { fs, vol } from "memfs";
 
 describe("importReplacer test", () => {
+  beforeEach(() => {
+    vol.reset();
+  });
   it("should replace import with globalThis", () => {
-    const ast = parse(
-      `
-            import { a } from "./b"
-            `,
-      { sourceType: "module" },
-    );
+    const text = `import { a } from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export const a = "a"`,
+    });
     expect(
-      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]))).code,
+      // @ts-ignore
+      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]), fs)).code,
     ).toBe(`const {
   a
 } = globalThis.__b_m__["b"];`);
   });
   it("should replace default import with globalThis", () => {
-    const ast = parse(
-      `
-            import a from "./b"
-            `,
-      { sourceType: "module" },
-    );
+    const text = `import a from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export default "a"`,
+    });
     expect(
-      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]))).code,
+      // @ts-ignore
+      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]), fs)).code,
     ).toBe(`const {
   ["default"]: a
 } = globalThis.__b_m__["b"];`);
   });
   it("should replace namespace import with globalThis", () => {
-    const ast = parse(
-      `
-            import * as a from "./b"
-            `,
-      { sourceType: "module" },
-    );
+    const text = `import * as a from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export const a = "a"`,
+    });
     expect(
-      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]))).code,
+      // @ts-ignore
+      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]), fs)).code,
     ).toBe(`const a = globalThis.__b_m__["b"];`);
   });
   it("should replace rename import with globalThis", () => {
-    const ast = parse(
-      `
-            import {a as b} from "./b"
-            `,
-      { sourceType: "module" },
-    );
+    const text = `import {a as b} from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export const a = "a"`,
+    });
     expect(
-      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]))).code,
+      // @ts-ignore
+      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]), fs)).code,
     ).toBe(`const {
   a: b
 } = globalThis.__b_m__["b"];`);
   });
   it("should replace invalid indentifier import with globalThis", () => {
-    const ast = parse(
-      `
-            import {"0" as b} from "./b"
-            `,
-      { sourceType: "module" },
-    );
+    const text = ` import {"0" as b} from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `const a = "a";export {a as "0"}`,
+    });
     expect(
-      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]))).code,
+      // @ts-ignore
+      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]), fs)).code,
     ).toBe(`const {
   ["0"]: b
 } = globalThis.__b_m__["b"];`);
   });
   it("should replace many import with globalThis", () => {
-    const ast = parse(
-      `
-            import {a as b,c,default as d} from "./b"
-            `,
-      { sourceType: "module" },
-    );
+    const text = `import {a as b,c,default as d} from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b.ts": `const a = "a";export {a as "0"};export {a};export default "a"`,
+    });
     expect(
-      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]))).code,
+      // @ts-ignore
+      generate(replaceImport(ast, "src/a", new Map([["src/b", "b"]]), fs)).code,
     ).toBe(`const {
   a: b,
   c,
@@ -190,12 +201,33 @@ describe("generateObjectProprtyComputed test", () => {
 });
 
 describe("getModuleKeyFromImportDeclaration test", () => {
+  it("when found,return that", () => {
+    vol.fromJSON({
+      "src/file": `export const foo = "bar"`,
+      "src/imFiles": `import "./file"`,
+    });
+    expect(
+      getModuleKeyFromImportDeclaration(
+        t.importDeclaration([], t.stringLiteral("./file")),
+        new Map([["src/file", "1"]]),
+        "src/imFile",
+        // @ts-ignore
+        fs,
+      ),
+    ).toBe("1");
+  });
   it("when not found,throw error", () => {
+    vol.fromJSON({
+      "src/file": `export const foo = "bar"`,
+      "src/imFiles": `import "./file"`,
+    });
     expect(() =>
       getModuleKeyFromImportDeclaration(
         t.importDeclaration([], t.stringLiteral("./file")),
         new Map(),
         "src/imFile",
+        // @ts-ignore
+        fs,
       ),
     ).throw();
   });

@@ -4,8 +4,9 @@ import traverse from "@babel/traverse";
 import {
   generateGlobalThisModuleMemberExpression,
   getNameFromIdentifierOrStringLiteral,
-  resolvePath,
+  resolvePathOrThrowError,
 } from "./utils";
+import type { FileSystem } from "enhanced-resolve";
 
 type NormalImportData = {
   exportedName: string;
@@ -16,6 +17,8 @@ export const replaceImport = (
   ast: t.File,
   fileName: string,
   nameMap: Map<string, string>,
+  fs: FileSystem,
+  tsconfigPath?: string,
 ): t.File => {
   const visitor: Visitor = {
     ImportDeclaration(path) {
@@ -23,6 +26,8 @@ export const replaceImport = (
         path.node,
         nameMap,
         fileName,
+        fs,
+        tsconfigPath,
       );
       const importData = generateImportData(path.node);
       const normalImportVariableDeclarator =
@@ -144,9 +149,13 @@ export const getModuleKeyFromImportDeclaration = (
   node: t.ImportDeclaration,
   nameMap: Map<string, string>,
   fileName: string,
+  fs: FileSystem,
+  tsconfigPath?: string,
 ): string => {
   const name = node.source.value;
-  const replacedName = nameMap.get(resolvePath(name, fileName));
+  const replacedName = nameMap.get(
+    resolvePathOrThrowError(name, fileName, fs, tsconfigPath),
+  );
   if (replacedName == null)
     throw new TypeError(`${name} mapped name is not found. this is bug.`);
   return replacedName;

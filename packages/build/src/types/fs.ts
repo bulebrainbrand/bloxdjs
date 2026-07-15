@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
 export type FullFsClient = typeof fs;
 
 export type ReadonlyDirFsClient = Pick<

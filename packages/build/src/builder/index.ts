@@ -14,7 +14,6 @@ import generate from "@babel/generator";
 import { pack } from "./packer";
 import { getEachFileInfo } from "./getFileInfo";
 import path from "node:path";
-import { resolveImportPathAsts } from "./resolveTsconfigPath";
 export const build = async (
   config: StrictConfig,
   fs: FullFsClient,
@@ -39,20 +38,14 @@ export const build = async (
    */
   const astMap = new Map(zip(paths, asts));
   console.log(`[x] created ast map`);
-  if (tsconfig.path && tsconfig.options && tsconfig.options.paths) {
-    const tempTsconfigPath = convertPathToTemp(tsconfig.path, cwd);
-    // when tsconfig is exists, resolve tsconfig original path. for example, @/foo.ts
-    resolveImportPathAsts(
-      astMap,
-      { compilerOptions: tsconfig.options },
-      tempTsconfigPath,
-    );
-    console.log(`[x] replaced typescript path option import`);
-  }
+
+  const tempTsconfigPath = tsconfig.path
+    ? convertPathToTemp(tsconfig.path, cwd)
+    : undefined;
   const {
     shouldReplaceExportFiles: ExporterFilesToReplace,
     shouldReplaceImportFiles: ImporterFilesToReplace,
-  } = collectShouldReplaceImportExports(astMap);
+  } = collectShouldReplaceImportExports(astMap, fs, tempTsconfigPath);
   console.log(
     `[x] collect should replace import/exports. start transfrom import ${ImporterFilesToReplace.size} export ${Array.from(ExporterFilesToReplace.keys()).join("\n")}`,
   );

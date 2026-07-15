@@ -8,6 +8,7 @@ import {
   resolveTargetModuleKey,
 } from "./utils";
 import traverse from "@babel/traverse";
+import type { FileSystem } from "enhanced-resolve";
 
 export type ExportedMemberOfShouldReplace =
   | { type: "part"; member: Set<string> }
@@ -18,6 +19,8 @@ export const addGlobalThisExport = (
   fileName: string,
   nameMap: Map<string, string>,
   shouldReplaceExport: ExportedMemberOfShouldReplace,
+  fs: FileSystem,
+  tsconfigPath?: string,
 ): t.File => {
   const moduleKey = getModuleKeyOrThrow(nameMap, fileName);
   const visitor: Visitor = {
@@ -45,6 +48,8 @@ export const addGlobalThisExport = (
         source.value,
         fileName,
         nameMap,
+        fs,
+        tsconfigPath,
       );
       handleSourcedReExport(
         path,
@@ -58,6 +63,8 @@ export const addGlobalThisExport = (
         path.node.source.value,
         fileName,
         nameMap,
+        fs,
+        tsconfigPath,
       );
       handleExportAll(path, moduleKey, targetModuleKey);
     },

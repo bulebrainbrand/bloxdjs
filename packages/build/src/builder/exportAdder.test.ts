@@ -9,34 +9,58 @@ import {
 import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 import traverse, { NodePath } from "@babel/traverse";
+import { beforeEach } from "node:test";
+import { fs, vol } from "memfs";
 
 describe("addGlobalThisExport test", () => {
+  beforeEach(() => {
+    vol.reset();
+  });
   it("should add globalThis export when ast include of NamedExport has variable declatarion with shouldReplaceExport has exported name", () => {
-    const ast = parse(`export const variable = 1`, { sourceType: "module" });
+    const text = `export const variable = 1`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(["variable"]),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(["variable"]),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`export const variable = 1;
 globalThis.__b_m__["a"]["variable"] = variable`);
   });
 
   it("should add globalThis export when ast include of NamedExport has function declatarion with shouldReplaceExport has exported name", () => {
-    const ast = parse(
-      `export function fn() {
+    const text = `export function fn() {
   console.log("hi!");
-}`,
-      { sourceType: "module" },
-    );
+}`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(["fn"]),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(["fn"]),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`export function fn() {
   console.log("hi!");
@@ -44,26 +68,48 @@ globalThis.__b_m__["a"]["variable"] = variable`);
 globalThis.__b_m__["a"]["fn"] = fn`);
   });
 
-  it("should add globalThis export when ast include of NamedExport has variable declatarion with shouldReplaceExport is 'All'", () => {
-    const ast = parse(`export const variable = 1`, { sourceType: "module" });
+  it("should add globalThis export when ast include of NamedExport has variable declatarion with shouldReplaceExport is 'all'", () => {
+    const text = `export const variable = 1`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "all",
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "all",
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`export const variable = 1;
 globalThis.__b_m__["a"]["variable"] = variable`);
   });
 
   it("should add globalThis export when ast include of NamedExport has class declatarion", () => {
-    const ast = parse(`export class a {};`, { sourceType: "module" });
+    const text = `export class a {};`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(["a"]),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(["a"]),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`export class a {}
 globalThis.__b_m__["a"]["a"] = a
@@ -71,13 +117,24 @@ globalThis.__b_m__["a"]["a"] = a
   });
 
   it("should add globalThis export when ast include of NamedExport has multi variableDeclarator", () => {
-    const ast = parse(`export const a = 1,b = 2`, { sourceType: "module" });
+    const text = `export const a = 1,b = 2`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(["a", "b"]),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(["a", "b"]),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`export const a = 1,
   b = 2;
@@ -86,13 +143,24 @@ globalThis.__b_m__["a"]["b"] = b`);
   });
 
   it("should add globalThis export when ast include of ExportSpecifier", () => {
-    const ast = parse(`const a = 1;export {a}`, { sourceType: "module" });
+    const text = `const a = 1;export {a}`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(["a"]),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(["a"]),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`const a = 1;
 export { a };
@@ -100,26 +168,48 @@ globalThis.__b_m__["a"].a = a`);
   });
 
   it("should not add globalThis export when ast include of renamed-ExportSpecifier", () => {
-    const ast = parse(`const a = 1;export {a as b}`, { sourceType: "module" });
+    const text = `const a = 1;export {a as b}`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`const a = 1;
 export { a as b };`);
   });
 
   it("should add globalThis export when ast include of renamed-ExportSpecifier and shouldReplaceExport has name", () => {
-    const ast = parse(`const a = 1;export {a as b}`, { sourceType: "module" });
+    const text = `const a = 1;export {a as b}`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+    });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(["b"]),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(["b"]),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`const a = 1;
 export { a as b };
@@ -127,15 +217,26 @@ globalThis.__b_m__["a"].b = a`);
   });
 
   it("should add globalThis export when ast include of invalid-idenfitier renamed-ExportSpecifier and shouldReplaceExport has name", () => {
-    const ast = parse(`const a = 1;export {a as "0"}`, {
+    const text = `const a = 1;export {a as "0"}`;
+    const ast = parse(text, {
       sourceType: "module",
+    });
+    vol.fromJSON({
+      "src/a": text,
     });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(["0"]),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(["0"]),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`const a = 1;
 export { a as "0" };
@@ -143,22 +244,38 @@ globalThis.__b_m__["a"]["0"] = a`);
   });
 
   it("should not add globalThis export when ast include of invalid-idenfitier renamed-ExportSpecifier without shouldReplaceExport", () => {
-    const ast = parse(`const a = 1;export {a as "0"}`, {
+    const text = `const a = 1;export {a as "0"}`;
+    const ast = parse(text, {
       sourceType: "module",
+    });
+    vol.fromJSON({
+      "src/a": text,
     });
     expect(
       generate(
-        addGlobalThisExport(ast, "src/a", new Map([["src/a", "a"]]), {
-          type: "part",
-          member: new Set(),
-        }),
+        addGlobalThisExport(
+          ast,
+          "src/a",
+          new Map([["src/a", "a"]]),
+          {
+            type: "part",
+            member: new Set(),
+          },
+          // @ts-ignore
+          fs,
+        ),
       ).code,
     ).toBe(`const a = 1;
 export { a as "0" };`);
   });
 
   it("should add globalThis export when ast include of renamed-ExportSpecifier", () => {
-    const ast = parse(`export { a } from "./b"`, { sourceType: "module" });
+    const text = `export { a } from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export const a = 1;`,
+    });
     expect(
       generate(
         addGlobalThisExport(
@@ -169,6 +286,8 @@ export { a as "0" };`);
             ["src/b", "b"],
           ]),
           { type: "part", member: new Set(["a"]) },
+          // @ts-ignore
+          fs,
         ),
       ).code,
     ).toBe(`export { a } from "./b";
@@ -176,7 +295,12 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
   });
 
   it("should not add globalThis export when ast include of renamed-ExportSpecifier without shouldReplaceExport", () => {
-    const ast = parse(`export { a } from "./b"`, { sourceType: "module" });
+    const text = `export { a } from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export const a = 1;`,
+    });
     expect(
       generate(
         addGlobalThisExport(
@@ -187,12 +311,20 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
             ["src/b", "b"],
           ]),
           { type: "part", member: new Set() },
+          // @ts-ignore
+          fs,
         ),
       ).code,
     ).toBe(`export { a } from "./b";`);
   });
+
   it("should add globalThis export when ast include of renamed-ExportDefaultSpecifier", () => {
-    const ast = parse(`export * as a from "./b"`, { sourceType: "module" });
+    const text = `export * as a from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export const a = 1;`,
+    });
     expect(
       generate(
         addGlobalThisExport(
@@ -203,13 +335,21 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
             ["src/b", "b"],
           ]),
           { type: "part", member: new Set(["a"]) },
+          // @ts-ignore
+          fs,
         ),
       ).code,
     ).toBe(`export * as a from "./b";
 globalThis.__b_m__["a"].a = globalThis.__b_m__["b"]`);
   });
+
   it("should add globalThis export when ast include of All re-export", () => {
-    const ast = parse(`export * from "./b"`, { sourceType: "module" });
+    const text = `export * from "./b"`;
+    const ast = parse(text, { sourceType: "module" });
+    vol.fromJSON({
+      "src/a": text,
+      "src/b": `export const a = 1;`,
+    });
     expect(
       generate(
         addGlobalThisExport(
@@ -220,6 +360,8 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"]`);
             ["src/b", "b"],
           ]),
           { type: "part", member: new Set() },
+          // @ts-ignore
+          fs,
         ),
       ).code,
     ).toBe(`export * from "./b";

@@ -1,13 +1,38 @@
 import * as t from "@babel/types";
-import path from "path";
+import { ResolverFactory, type FileSystem } from "enhanced-resolve";
 import { GLOBALTHIS_MODULE_INTERNAL_PROPERTY_NAME } from "./constants";
+import path from "path";
 export const getNameFromIdentifierOrStringLiteral = (
   node: t.Identifier | t.StringLiteral,
 ): string => (t.isStringLiteral(node) ? node.value : node.name);
 
-export const resolvePath = (exporter: string, importer: string) =>
-  path.join(path.dirname(importer), exporter).replaceAll("\\", "/");
+export const resolvePath = (
+  exporter: string,
+  importer: string,
+  fs: FileSystem,
+  tsconfigPath?: string,
+): string | false => {
+  const resolver = ResolverFactory.createResolver({
+    fileSystem: fs,
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
+    tsconfig: tsconfigPath,
+    useSyncFileSystemCalls: true,
+  });
 
+  return resolver.resolveSync(path.dirname(importer), exporter);
+};
+
+export const resolvePathOrThrowError = (
+  exporter: string,
+  importer: string,
+  fs: FileSystem,
+  tsconfigPath?: string,
+): string => {
+  const result = resolvePath(exporter, importer, fs, tsconfigPath);
+  if (result === false)
+    throw new TypeError(`can't resolved import "${exporter}" on ${importer}`);
+  return result;
+};
 export const generateGlobalThisModuleMemberExpression = (
   moduleKey: string,
 ): t.MemberExpression => {
@@ -37,9 +62,16 @@ export const resolveTargetModuleKey = (
   source: string,
   fileName: string,
   nameMap: Map<string, string>,
+  fs: FileSystem,
+  tsconfigPath?: string,
 ): string | null => {
   if (isNodePackage(source)) return null;
-  const exporterPath = resolvePath(source, fileName);
+  const exporterPath = resolvePathOrThrowError(
+    source,
+    fileName,
+    fs,
+    tsconfigPath,
+  );
   return getModuleKeyOrThrow(nameMap, exporterPath);
 };
 
