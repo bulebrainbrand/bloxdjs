@@ -177,7 +177,42 @@ function encodeBlocks(blocks: number[]): Buffer {
   }
   return Buffer.from(bytes);
 }
-
+export function avroSchematicToObjectSchematic(avro: AvroSchematic): Schematic {
+  return {
+    name: avro.name,
+    pos: [avro.x, avro.y, avro.z],
+    size: [avro.sizeX, avro.sizeY, avro.sizeZ],
+    chunks: avro.chunks.map((avroChunk) => ({
+      pos: [avroChunk.x, avroChunk.y, avroChunk.z],
+      blocks: decodeBlocks(avroChunk.blocks),
+    })),
+    blockdatas: avro.blockdatas,
+  };
+}
+export function objectSchmeticToAvroSchematic(schem: Schematic): AvroSchematic {
+  const avro: AvroSchematic = {
+    headers: HEADER_DEFAULT,
+    name: schem.name,
+    x: schem.pos[0],
+    y: schem.pos[1],
+    z: schem.pos[2],
+    sizeX: schem.size[0],
+    sizeY: schem.size[1],
+    sizeZ: schem.size[2],
+    chunks: schem.chunks.map((chunk) => ({
+      x: chunk.pos[0],
+      y: chunk.pos[1],
+      z: chunk.pos[2],
+      blocks: encodeBlocks(chunk.blocks),
+    })),
+    blockdatas: schem.blockdatas,
+    globalX: 0,
+    globalY: 0,
+    globalZ: 0,
+    tail_magic: TAIL_MAGIC,
+  };
+  return avro;
+}
 export function splitBloxdschem(avro: AvroSchematic): {
   schems: AvroSchematic[];
   sliceSize: number;
@@ -247,42 +282,11 @@ export function parseBloxdschem(buffer: Uint8Array<ArrayBuffer>): Schematic {
     Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength),
   ) as AvroSchematic;
 
-  return {
-    name: avro.name,
-    pos: [avro.x, avro.y, avro.z],
-    size: [avro.sizeX, avro.sizeY, avro.sizeZ],
-    chunks: avro.chunks.map((avroChunk) => ({
-      pos: [avroChunk.x, avroChunk.y, avroChunk.z],
-      blocks: decodeBlocks(avroChunk.blocks),
-    })),
-    blockdatas: avro.blockdatas,
-  };
+  return avroSchematicToObjectSchematic(avro);
 }
 
 const HEADER_DEFAULT = Buffer.from([0x04, 0x00, 0x00, 0x00]);
 const TAIL_MAGIC = Buffer.from([0x00, 0x00]);
 export function writeBloxdschem(schem: Schematic): Uint8Array<ArrayBufferLike> {
-  const avro: AvroSchematic = {
-    headers: HEADER_DEFAULT,
-    name: schem.name,
-    x: schem.pos[0],
-    y: schem.pos[1],
-    z: schem.pos[2],
-    sizeX: schem.size[0],
-    sizeY: schem.size[1],
-    sizeZ: schem.size[2],
-    chunks: schem.chunks.map((chunk) => ({
-      x: chunk.pos[0],
-      y: chunk.pos[1],
-      z: chunk.pos[2],
-      blocks: encodeBlocks(chunk.blocks),
-    })),
-    blockdatas: schem.blockdatas,
-    globalX: 0,
-    globalY: 0,
-    globalZ: 0,
-    tail_magic: TAIL_MAGIC,
-  };
-
-  return fullSchema.toBuffer(avro);
+  return fullSchema.toBuffer(objectSchmeticToAvroSchematic(schem));
 }
