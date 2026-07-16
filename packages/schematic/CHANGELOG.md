@@ -1,5 +1,11 @@
 # @bloxdjs/schematic
 
+## 0.0.4
+
+### Patch Changes
+
+- [#39](https://github.com/bulebrainbrand/bloxdjs/pull/39) [`a1fcef4`](https://github.com/bulebrainbrand/bloxdjs/commit/a1fcef45bf4d29cbd792d79c5b0e658d3b47f01d) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add schematiconvertor
+
 ## 0.0.3
 
 ### Patch Changes
