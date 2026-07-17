@@ -36,7 +36,8 @@ describe("addGlobalThisExport test", () => {
           fs,
         ),
       ).code,
-    ).toBe(`export const variable = 1;
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export const variable = 1;
 globalThis.__b_m__["a"]["variable"] = variable`);
   });
 
@@ -62,7 +63,8 @@ globalThis.__b_m__["a"]["variable"] = variable`);
           fs,
         ),
       ).code,
-    ).toBe(`export function fn() {
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export function fn() {
   console.log("hi!");
 }
 globalThis.__b_m__["a"]["fn"] = fn`);
@@ -87,7 +89,8 @@ globalThis.__b_m__["a"]["fn"] = fn`);
           fs,
         ),
       ).code,
-    ).toBe(`export const variable = 1;
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export const variable = 1;
 globalThis.__b_m__["a"]["variable"] = variable`);
   });
 
@@ -111,7 +114,8 @@ globalThis.__b_m__["a"]["variable"] = variable`);
           fs,
         ),
       ).code,
-    ).toBe(`export class a {}
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export class a {}
 globalThis.__b_m__["a"]["a"] = a
 ;`);
   });
@@ -136,7 +140,8 @@ globalThis.__b_m__["a"]["a"] = a
           fs,
         ),
       ).code,
-    ).toBe(`export const a = 1,
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export const a = 1,
   b = 2;
 globalThis.__b_m__["a"]["a"] = a
 globalThis.__b_m__["a"]["b"] = b`);
@@ -162,7 +167,8 @@ globalThis.__b_m__["a"]["b"] = b`);
           fs,
         ),
       ).code,
-    ).toBe(`const a = 1;
+    ).toBe(`globalThis.__b_m__["a"] = {};
+const a = 1;
 export { a };
 globalThis.__b_m__["a"].a = a`);
   });
@@ -187,7 +193,8 @@ globalThis.__b_m__["a"].a = a`);
           fs,
         ),
       ).code,
-    ).toBe(`const a = 1;
+    ).toBe(`globalThis.__b_m__["a"] = {};
+const a = 1;
 export { a as b };`);
   });
 
@@ -211,7 +218,8 @@ export { a as b };`);
           fs,
         ),
       ).code,
-    ).toBe(`const a = 1;
+    ).toBe(`globalThis.__b_m__["a"] = {};
+const a = 1;
 export { a as b };
 globalThis.__b_m__["a"].b = a`);
   });
@@ -238,7 +246,8 @@ globalThis.__b_m__["a"].b = a`);
           fs,
         ),
       ).code,
-    ).toBe(`const a = 1;
+    ).toBe(`globalThis.__b_m__["a"] = {};
+const a = 1;
 export { a as "0" };
 globalThis.__b_m__["a"]["0"] = a`);
   });
@@ -265,7 +274,8 @@ globalThis.__b_m__["a"]["0"] = a`);
           fs,
         ),
       ).code,
-    ).toBe(`const a = 1;
+    ).toBe(`globalThis.__b_m__["a"] = {};
+const a = 1;
 export { a as "0" };`);
   });
 
@@ -290,7 +300,8 @@ export { a as "0" };`);
           fs,
         ),
       ).code,
-    ).toBe(`export { a } from "./b";
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export { a } from "./b";
 globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
   });
 
@@ -315,7 +326,8 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
           fs,
         ),
       ).code,
-    ).toBe(`export { a } from "./b";`);
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export { a } from "./b";`);
   });
 
   it("should add globalThis export when ast include of renamed-ExportDefaultSpecifier", () => {
@@ -339,7 +351,8 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"].a`);
           fs,
         ),
       ).code,
-    ).toBe(`export * as a from "./b";
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export * as a from "./b";
 globalThis.__b_m__["a"].a = globalThis.__b_m__["b"]`);
   });
 
@@ -364,7 +377,8 @@ globalThis.__b_m__["a"].a = globalThis.__b_m__["b"]`);
           fs,
         ),
       ).code,
-    ).toBe(`export * from "./b";
+    ).toBe(`globalThis.__b_m__["a"] = {};
+export * from "./b";
 Object.assign(globalThis.__b_m__["a"], globalThis.__b_m__["b"])`);
   });
 });

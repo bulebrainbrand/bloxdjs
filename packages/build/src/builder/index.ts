@@ -19,6 +19,7 @@ import generate from "@babel/generator";
 import { pack } from "./packer";
 import { getEachFileInfo } from "./getFileInfo";
 import path from "node:path";
+import { addBloxdModuleInit } from "./addBloxdModuleInit";
 export const build = async (
   config: StrictConfig,
   fs: FullFsClient,
@@ -32,6 +33,11 @@ export const build = async (
   console.log(`[x] resolved imnclude files: ${includeFiles.length} file`);
   const paths = copyToTempDirectory(includeFiles, cwd, fs);
   console.log(`[x] created temp dir`);
+  const worldcodeEntry = convertPathToInnerTempDirectory(
+    path.resolve(cwd, config.worldcode.entry),
+    cwd,
+  );
+
   const tsconfig = getTsconfig();
   if (tsconfig.path) {
     copyFileToTempDirectory(tsconfig.path, fs, cwd);
@@ -97,6 +103,9 @@ export const build = async (
       if (config.debug) console.log(`replace import`);
       replaceImport(ast, path, fileNameMap, fs, tempTsconfigPath);
     }
+    if (path === worldcodeEntry) {
+      addBloxdModuleInit(ast);
+    }
     fs.writeFileSync(path, generate(ast).code);
     console.log(`[x] coverted ${path}`);
   }
@@ -114,10 +123,7 @@ export const build = async (
     console.log(
       `entryCodeBlockFileToNameMap: \n${Array.from(entryCodeBlockFileToNameMap.entries().map(([file, type]) => `${file}: ${type}`)).join("\n")}`,
     );
-  const worldcodeEntry = convertPathToInnerTempDirectory(
-    path.resolve(cwd, config.worldcode.entry),
-    cwd,
-  );
+
   await pack(
     entryCodeBlockFileToNameMap,
     worldcodeEntry,
