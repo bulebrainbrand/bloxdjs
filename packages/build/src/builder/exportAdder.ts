@@ -23,6 +23,15 @@ export const addGlobalThisExport = (
   tsconfigPath?: string,
 ): t.File => {
   const moduleKey = getModuleKeyOrThrow(nameMap, fileName);
+  ast.program.body.unshift(
+    t.expressionStatement(
+      t.assignmentExpression(
+        "=",
+        generateGlobalThisModuleMemberExpression(moduleKey),
+        t.objectExpression([]),
+      ),
+    ),
+  );
   const visitor: Visitor = {
     ExportNamedDeclaration(path) {
       const node = path.node;
