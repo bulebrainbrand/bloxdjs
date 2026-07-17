@@ -1,5 +1,11 @@
 # @bloxdjs/build
 
+## 0.0.11
+
+### Patch Changes
+
+- [#43](https://github.com/bulebrainbrand/bloxdjs/pull/43) [`d9b44fc`](https://github.com/bulebrainbrand/bloxdjs/commit/d9b44fc88977f4eeefb560c5cdc62c2b1ddc79e8) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add init module
+
 ## 0.0.10
 
 ### Patch Changes
