@@ -1,5 +1,11 @@
 # @bloxdjs/schematic
 
+## 0.0.5
+
+### Patch Changes
+
+- [#41](https://github.com/bulebrainbrand/bloxdjs/pull/41) [`4f3bc25`](https://github.com/bulebrainbrand/bloxdjs/commit/4f3bc25523399ad765cf03b4772ac60af481b26a) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add util functions
+
 ## 0.0.4
 
 ### Patch Changes
