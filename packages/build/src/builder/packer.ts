@@ -1,4 +1,5 @@
 import { build } from "esbuild";
+import { GLOBALTHIS_MODULE_INTERNAL_PROPERTY_NAME } from "./constants";
 
 export const pack = async (
   entryCodeBlock: Map<string, string>,
@@ -14,6 +15,9 @@ export const pack = async (
     outfile: "dist/worldcode.js",
     minify,
     tsconfig: tsconfigPath,
+    banner: {
+      js: `globalThis.${GLOBALTHIS_MODULE_INTERNAL_PROPERTY_NAME} = {}`,
+    },
   };
   await build(buildOptions);
   for (const [entryPath, name] of entryCodeBlock) {
