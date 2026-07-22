@@ -1,5 +1,11 @@
 # @bloxdjs/build
 
+## 0.0.12
+
+### Patch Changes
+
+- [#45](https://github.com/bulebrainbrand/bloxdjs/pull/45) [`66db26a`](https://github.com/bulebrainbrand/bloxdjs/commit/66db26ab5524101168c92bf7d3cd936b89dc274f) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: change globalhis module initnizer from ast to esbuild's banner option
+
 ## 0.0.11
 
 ### Patch Changes
