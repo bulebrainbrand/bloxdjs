@@ -1759,6 +1759,12 @@ interface GameApi {
     opts: MeshEntityOpts[MeshType],
   ): void;
   /**
+   * Delete any non-player entity (mesh entity, mob, audio entity, item drop, throwable, etc.) and dispose of their state.
+   * @param eId
+   * @returns whether the entity's replicated state existed and was deleted
+   */
+  deleteEntity(eId: EntityId): boolean;
+  /**
    * Delete a mesh entity
    *
    * @param eId
@@ -1889,6 +1895,13 @@ interface GameApi {
    * Check whether the player has any qteRequests
    */
   hasActiveQTE(playerId: PlayerId): boolean;
+  /**
+   * Delete a request for a player.
+   *
+   * @param playerId
+   * @param id Returned from the addUiRequest call you want to cancel
+   */
+  deleteUiRequest(playerId: PlayerId, id: UiRequestId): void;
   /**
    * Show a message over the shop in the same place that a shop item's onBoughtMessage is shown.
    * Displays for a couple seconds before disappearing
@@ -2383,6 +2396,36 @@ interface GameApi {
    */
   removeFromQueue(id: QueuedCommandId): void;
   /**
+   * Add a request for the player to answer in the top right corner. E.g. accepting or denying a tprequest.
+   *
+   * Use onUiRequestResponded to handle the response.
+   *
+   * Example Usage:
+   * \`\`\`js
+   * const uiRequestId = api.addUiRequest(playerId, {
+   *   type: "standard",
+   *   title: "Do you want to join the game?",
+   * }, 5000)
+   *
+   * onUiRequestResponded = (playerId, id, response) => {
+   *   if(id === uiRequestId) {
+   *     api.log(response)
+   *   }
+   * }
+   * \`\`\`
+   *
+   *
+   * @param playerId The ID of the player to add the request to.
+   * @param parameters The parameters of the request.
+   * @param timeoutAfterMs The timeout after which the request will be automatically deleted. A response will not be given and onUiRequestResponded will not be called.
+   * @returns The ID of the request. Pass into deleteUiRequest or cross-reference with onUiRequestResponded.
+   */
+  addUiRequest(
+    playerId: PlayerId,
+    parameters: UiRequestClientParameters,
+    timeoutAfterMs?: number,
+  ): number;
+  /**
    * Log a message to chat.
    */
   log(message: string): void;
@@ -2408,20 +2451,14 @@ interface PlayerAttemptDamageOtherPlayerOpts {
   horizontalKbMultiplier?: number;
   verticalKbMultiplier?: number;
   broadcastEntityHurt?: boolean;
-  attackCooldownSettings?: PNull<{
-    type: string;
-    cooldownMs: number;
-  }>;
+  attackCooldownSettings?: PNull<{ type: string; cooldownMs: number }>;
   hittingSoundOverride?: HittingSoundOverride;
   ignoreOtherEntitySettingCanAttack?: boolean;
   isTrueDamage?: boolean;
+  // The damaging playerDbId. If null, will default to the dbId of \`eId\`
   damagerDbId?: PNull<PlayerId>;
 }
-type HittingSoundOverride = {
-  sound: string;
-  volume: number;
-  pitch: number;
-};
+type HittingSoundOverride = { sound: string; volume: number; pitch: number };
 type ItemName = string;
 type EnchantmentAttributes = {
   enchantments: Partial<Record<EnchantmentPerk, number>>;
@@ -2437,6 +2474,7 @@ type CustomTextStyling = (
   | StyledIcon
   | StyledText
   | ProgressBar
+  | StyledKeyBinding
 )[];
 type TranslatedText = {
   translationKey: string;
@@ -2464,7 +2502,6 @@ type FontSize = string;
 type StyledText = {
   str: string | EntityName | TranslatedText;
   style?: TextStyle;
-  clickableUrl?: string;
 };
 type TextStyle = {
   color?: string;
@@ -2475,6 +2512,7 @@ type TextStyle = {
   opacity?: number;
 };
 type ProgressBar = {
+  // Mandatory discriminator: marks this CustomTextStyling item as a progress bar.
   type: "ProgressBar";
   progress: number;
   width?: FontSize;
@@ -2482,6 +2520,12 @@ type ProgressBar = {
   colours?: string[];
   backgroundColour?: string;
 };
+type StyledKeyBinding = {
+  type: "StyledKeyBinding";
+  action: NoaAction;
+  style?: TextStyle;
+};
+type NoaAction = _TypeOf["noaActions"][number];
 type ClientOption = keyof ClientOptions;
 type EarthSkyBox = {
   type: "earth";
@@ -2489,18 +2533,26 @@ type EarthSkyBox = {
   turbidity?: number;
   infiniteDistance?: boolean;
   luminance?: number;
+  // Sky appearance (light intensity); higher = more saturated sky.
   rayleigh?: number;
+  // Mie scattering coefficient in [0, 0.1]; affects mieDirectionalG impact.
   mieCoefficient?: number;
+  // Amount of haze particles per Mie scattering theory.
   mieDirectionalG?: number;
+  // Distance of the sun from the active scene camera.
   distance?: number;
+  // When \`useSunPosition\` is true, this overrides \`inclination\` + \`azimuth\`.
   sunPosition?: Vec3;
   useSunPosition?: boolean;
   xCameraOffset?: number;
   yCameraOffset?: number;
   zCameraOffset?: number;
+  // Direction the sky considers "up"; defaults to [0, 1, 0].
   up?: Vec3;
+  // Dither the sky to reduce visible banding.
   dithering?: boolean;
   azimuth?: number;
+  // Not part of sky model by default; heavily tint to a vertex color
   vertexTint?: Vec3;
 };
 type Vec3 = [number, number, number];
@@ -2509,12 +2561,12 @@ type LobbyLeaderboardInfo = Record<
   {
     displayName?: string | CustomTextStyling;
     hidden?: boolean;
-    sortOrder?: "ascending" | "descending";
+    sortOrder?: "ascending" | "descending"; // No value means descending
     sortPriority?: number;
   }
 >;
 type TextWithDisplayOptions = {
-  showBackground?: boolean;
+  showBackground?: boolean; // Defaults to true. When false, the option's background panel is hidden.
   content: string | CustomTextStyling;
 };
 type HeaderChip = string | CustomTextStyling | TextWithDisplayOptions;
@@ -2526,7 +2578,7 @@ type ShopItem = {
   schematicId?: SchematicId;
   cost?: number;
   currency?: string;
-  amount?: number;
+  amount?: number; // Display amount shown on the shop tile image (0 and 1 are not displayed)
   imageColour?: string;
   canBuy?: boolean;
   isSelected?: boolean;
@@ -2537,22 +2589,15 @@ type ShopItem = {
   redDot?: boolean;
   forceRemoveRedDot?: boolean;
   isRewardedAd?: boolean;
-  badge?: {
-    text: string | CustomTextStyling;
-    type: ShopItemBadgeType;
-  };
+  badge?: { text: string | CustomTextStyling; type: ShopItemBadgeType };
   userInput?: ShopItemUserInput;
   enchant?: {
     tier: EnchantmentTier;
     enchantments: Partial<Record<EnchantmentPerk, number>>;
-    enchantmentData?: Record<
-      string,
-      {
-        icon?: string;
-        description?: string;
-      }
-    >;
+    enchantmentData?: Record<string, { icon?: string; description?: string }>;
   };
+
+  // Not defined on client, must be defined on server
   boughtCallback?: (
     playerId: PlayerId,
     cost: number,
@@ -2562,8 +2607,8 @@ type ShopItem = {
     userInput: string,
     amount: number | undefined,
   ) => void;
-  sell?: boolean;
-  sortPriority?: number;
+  sell?: boolean; // Optional, defaults to false. If true, the sign of "cost" is flipped. So a "cost" of -25 would give the player 25 currency AND be displayed as "25" (instead of -25)
+  sortPriority?: number; // Descending, bigger number means closer to the top
   hidden?: boolean;
 };
 type ShopItemUserInput =
@@ -2572,38 +2617,22 @@ type ShopItemUserInput =
       placeholderText?: string;
       wordCharsOnly?: boolean;
       initialValue?: string;
-    }
-  | {
-      type: "number";
-      placeholderText?: string;
-      initialValue?: string;
-    }
+    } // wordCharsOnly defaults to false. If true, only allows \w character (alphanumeric and _). initialValue always takes precedence as the text input value when set.
+  | { type: "number"; placeholderText?: string; initialValue?: string }
   | {
       type: "dropdown";
-      dropdownOptions: readonly (
-        | string
-        | {
-            option: string;
-            cost: number;
-          }
-      )[];
-      shouldResetSelectionOnOptionsChange?: boolean;
+      dropdownOptions: readonly (string | { option: string; cost: number })[];
+      shouldResetSelectionOnOptionsChange?: boolean; // Defaults to false. If true, the selection will reset to the first option when dropdownOptions changes.
       initialValue?: string;
-      autoSubmit?: boolean;
+      autoSubmit?: boolean; // Defaults to false. If true, the dropdown will automatically submit when the user selects an option.
     }
-  | {
-      type: "player";
-      excludedPlayers?: PlayerId[];
-    }
-  | {
-      type: "color";
-      initialValue?: string;
-    };
+  | { type: "player"; excludedPlayers?: PlayerId[] } // Defaults to excluding the current player
+  | { type: "color"; initialValue?: string };
 type SchematicId = string;
 type ShopItemBadgeType = _TypeOf["shopItemBadgeTypes"][number];
 type ShopCategoryConfig = Partial<{
   autoSelectCategory: boolean;
-  customTitle: string;
+  customTitle: string; // Supports translation keys and ordinary text
   redDot: boolean;
   forceRemoveRedDot: boolean;
   sortPriority: number;
@@ -2630,27 +2659,42 @@ type NameTagInfo = {
   border?: NameTagBorder;
 };
 type RankInfo = {
+  // Font Awesome icon name
   icon: string;
   mainRGB: string;
+  // Defaults to mainRGB
   bracketRGB?: string;
   chatTag: {
     str: string;
+    // Defaults to mainRGB
     strRGB?: string;
   }[];
+  // Defaults to none
   nameTag: {
+    // Defaults to normal name colour (white)
     iconRGB?: string;
+    // Defaults to none
     iconShadowRGB?: string;
   };
-  visible: boolean;
+  visible: boolean; // If false, this rank will not be shown in the player list or in the chat
 };
 type HealthbarInfo = Readonly<{
+  // Controls when the healthbar is shown.
+  // "onDamage" (default) shows it for a few seconds after the entity takes damage.
   display?: HealthbarDisplay;
   height?: FontSize;
+  // Track colour behind the depleting bar. Undefined leaves the background transparent.
   backgroundColour?: string;
+  // Fill colour of the bar. Either a flat colour, or a gradient keyed on health fraction.
+  // Undefined uses the default green -> orange -> red depleting gradient.
   foregroundColour?: string | readonly HealthbarColourGradient[];
 }>;
 type NameTagBorder = Readonly<{
   colour: string;
+  // Visual preset:
+  // - "solid": a flat outline.
+  // - "glow": an outline with an outer glow - reads as powerful/elite, ideal for bosses.
+  // - "double": two concentric outlines for an ornate, high-stakes look.
   style?: NameTagBorderStyle;
   width?: FontSize;
   applyTo?: NameTagBorderTarget;
@@ -2713,7 +2757,7 @@ type AnimationSchema = Readonly<{
   nodeAnimations?: NodeSkeletonAnimationSchema;
 }>;
 type BlockbenchAnimationSchema = Readonly<{
-  animation_length: number;
+  animation_length: number; // The duration of the animation in seconds.
   loop?: BlockbenchLoopModeSchema;
   bones?: BlockbenchBonesAnimationSchema;
 }>;
@@ -2721,8 +2765,8 @@ type LoopModeSchema = boolean | "hold-on-last-frame";
 type AnimationTimelineSchema = readonly KeyframeSchema[];
 type KeyframeSchema = Readonly<{
   timeFraction: number;
-  rotation?: LerpPointSchema;
-  position?: LerpPointSchema;
+  rotation?: LerpPointSchema; // Rotations are assumed to be in radians.
+  position?: LerpPointSchema; // Position offsets in mesh-local units; (0, 0, 0) means the node's rest pose.
 }>;
 type LerpPointSchema =
   | Point
@@ -2732,8 +2776,8 @@ type LerpPointSchema =
     }>
   | Readonly<{
       lerpMode?: LerpModeSchema;
-      pre: Point;
-      post: Point;
+      pre: Point; // When lerping towards a point, we lerp towards its pre.
+      post: Point; // When lerping away from a point, we lerp away from its post.
     }>;
 type Point = Readonly<Vec3>;
 type LerpModeSchema = "linear" | "catmull-rom-spline";
@@ -2746,8 +2790,8 @@ type BlockbenchAnimationFrameSchema =
   | Point
   | Readonly<{
       lerp_mode?: BlockbenchLerpModeSchema;
-      pre?: Point;
-      post: Point;
+      pre?: Point; // When lerping towards a point, we lerp towards its pre.
+      post: Point; // When lerping away from a point, we lerp away from its post.
     }>;
 type BlockbenchLerpModeSchema = "linear" | "catmullrom";
 type NodeSkeletonAnimationSchema = Readonly<
@@ -2761,8 +2805,8 @@ type BlockbenchBonesAnimationSchema = Readonly<
   Record<NodeName, BlockbenchBoneAnimationSchema>
 >;
 type BlockbenchBoneAnimationSchema = Readonly<{
-  rotation?: BlockbenchAnimationTimelineSchema;
-  position?: BlockbenchAnimationTimelineSchema;
+  rotation?: BlockbenchAnimationTimelineSchema; // Blockbench rotations are in degrees.
+  position?: BlockbenchAnimationTimelineSchema; // Blockbench position offsets in mesh-local units; rest pose is (0, 0, 0).
 }>;
 type MobId = LifeformId;
 type MobDbId = string;
@@ -2791,7 +2835,6 @@ type PersistedExtraInfo = {
   // - updated infrequently, to avoid excessive writes to the DB.
   customMetadata: any;
 };
-type MobType = _TypeOf["mobTypes"][number];
 type ItemAttributes = {
   customDisplayName?: string;
   customDescription?: string;
@@ -2805,15 +2848,16 @@ type ItemDropOptions = Readonly<
 >;
 type AudioEntityOpts = {
   soundName: string;
+  // Base relative volume in [0, 1], before distance attenuation.
   volume: number;
+  // Inverse-distance reference distance in blocks; larger = gentler falloff.
   refDistance: number;
+  // Hard cutoff distance in blocks; beyond this the entity is silent.
   maxHearDist: number;
+  // Playback rate multiplier (1 = normal pitch/speed).
   rate: number;
 };
-type AnimParams = {
-  animTextures: string[];
-  animationInterval: number;
-};
+type AnimParams = { animTextures: string[]; animationInterval: number };
 type HarvestType = "granule" | "wood" | "rock" | "cuttable";
 type BlockMetadataModelType =
   | "CentreCross"
@@ -2835,13 +2879,9 @@ type RecursiveReadonly<T> = T extends Primitive
     ? T
     : T extends readonly unknown[]
       ? number extends T["length"]
-        ? ReadonlyArray<RecursiveReadonly<T[number]>>
-        : {
-            readonly [K in keyof T]: RecursiveReadonly<T[K]>;
-          }
-      : Readonly<{
-          [K in keyof T]: RecursiveReadonly<T[K]>;
-        }>;
+        ? ReadonlyArray<RecursiveReadonly<T[number]>> // T[]
+        : { readonly [K in keyof T]: RecursiveReadonly<T[K]> } // Tuple
+      : Readonly<{ [K in keyof T]: RecursiveReadonly<T[K]> }>;
 type Primitive = string | number | boolean | bigint | symbol | undefined | null;
 type SoundType =
   | "stone"
@@ -2854,7 +2894,7 @@ type SoundType =
   | "cloth";
 type GunStatsOverride = Partial<Omit<GunMetadata, NonOverridableStats>>;
 type GunMetadata = {
-  gunType: GunCategory;
+  gunType: GunCategory; // Used for sounds
   scopeType: "none" | "sniper";
   muzzleFlashOffsetFromGun: Vec3;
   muzzleFlashScale?: number;
@@ -2881,28 +2921,39 @@ type GunMetadata = {
   altInaccuracyFromShot: number;
   altInaccuracyMovement: number;
   recoveryRate: number;
-  msPerRound?: number;
-  msPerRoundTouchScreen?: number;
+
+  msPerRound?: number; // computed from fireRate
+  msPerRoundTouchScreen?: number; // computed from fireRateWithHeldTouch
+
   altYVelocityInaccuracy?: number;
   altInaccuracyFromJump?: number;
+
   hasVerticalInaccuracy?: boolean;
+
   keepScopeOnShot?: boolean;
+
   aimZoomFactor?: number;
+
+  // Kickback
   kickbackDecreaseRate: number;
   minKickback?: number;
   maxKickback?: number;
   kickbackRate?: number;
 };
 type NonOverridableStats =
+  // Precomputed values
   | "msPerRound"
   | "msPerRoundTouchScreen"
+
+  // These two don't even work lol
+  // TODO: Fix them
   | "tagSpeedMult"
   | "subsequentTagSpeedReductionScalar";
 type GunCategory = _TypeOf["gunCategories"][number];
 type WeaponComboInfo = Readonly<{
   comboWindowMs: number;
   comboMultipliers: readonly number[];
-  backstabAngle?: number;
+  backstabAngle?: number; // If present, hitting an enemy from behind within this angle (radians) skip to end of combo
 }>;
 type AnyMetadataItem = Partial<BlockMetadataItem & NonBlockMetadataItem>;
 type CustomItemStat = _TypeOf["customItemStats"][number];
@@ -2914,10 +2965,7 @@ type InvenItem = {
 };
 type RecipesForItem = RecursiveReadonly<
   {
-    requires: {
-      items: ItemName[];
-      amt: number;
-    }[];
+    requires: { items: ItemName[]; amt: number }[];
     produces: number;
     station?: string | string[];
     onCraftedAura?: number;
@@ -2943,10 +2991,10 @@ type MeshEntityOpts = {
     depth: number;
     diffuseColor?: number[];
     emissiveColor?: number[];
-    backFaceCulling?: boolean;
-    texture?: string;
+    backFaceCulling?: boolean; // Default true
+    texture?: string; // Can be a blockname. Wraps every one block
     faceUV?: number[][];
-    animateTexture?: boolean;
+    animateTexture?: boolean; // If true, \`texture\` must be an animated block name (e.g. "Lava", "Red Portal") and the Box cycles through its frames.
   };
   BloxdBlock: CommonMeshEntityOpts & {
     blockName: BlockNameOrId;
@@ -2963,7 +3011,7 @@ type CommonMeshEntityOpts = {
   hideDist?: number;
   meshOffset?: number[];
   autoRotate?: boolean;
-  lineToEId?: EntityId;
+  lineToEId?: EntityId; // EntityId to connect to using a line
 };
 type BlockNameOrId = BlockName | BlockId;
 type Cosmetics = Record<CosmeticType, CosmeticName>;
@@ -2980,6 +3028,7 @@ type MeshParticleSystemOpts = ParticleSystemOpts &
 type CosmeticType = _TypeOf["cosmeticTypes"][number];
 type CosmeticName = string;
 type MobHerdId = number;
+type MobType = _TypeOf["mobTypes"][number];
 type MobSpawnOpts<TMobType extends MobType> = Partial<{
   mobHerdId: MobHerdId;
   spawnerId: PlayerId;
@@ -3026,11 +3075,11 @@ type MobSettings<TMobType extends MobType> = {
   secondaryAttackRadius: number;
   attackDamage: number;
   secondaryAttackDamage: number;
-  isReceivingDamageCooldownGlobal: boolean;
-  knockbackReceivedMultiplier: number;
+  isReceivingDamageCooldownGlobal: boolean; // When the mob is attacked, a short cooldown prevents further damage from the same attack type. If true, all attackers share that cooldown. If false, each attacker has their own.
+  knockbackReceivedMultiplier: number; // Scales incoming knockback when the mob is hit: 0 = immune (no knockback), 1 = normal, 2 = double. Applied on top of any worn-armour/effect knockback resistance.
   attackImpulse: number;
   secondaryAttackImpulse: number;
-  rangedAttackInaccuracy: number;
+  rangedAttackInaccuracy: number; // Total angular width of the random cone (in radians), 0 = perfectly accurate (laser-aim). Only affects throwable/projectile attacks
   burstAttackInfo: PNull<MobBurstAttackInfo>;
   secondaryBurstAttackInfo: PNull<MobBurstAttackInfo>;
   heldItemName: PNull<ItemName>;
@@ -3048,7 +3097,7 @@ type MobSettings<TMobType extends MobType> = {
   chargeSpecialAttackInfo: PNull<MobChargeSpecialAttackInfo>;
   tameInfo: PNull<Readonly<MobTameInfo>>;
   onTamedHealthMultiplier: number;
-  petInfo: Readonly<MobPetInfo>;
+  petInfo: Readonly<MobPetInfo>; // Instance-specific information related to mob feeding
   ownerDbId: PNull<PlayerDbId>;
   minFollowingRadius: number;
   maxFollowingRadius: number;
@@ -3056,6 +3105,9 @@ type MobSettings<TMobType extends MobType> = {
   healthRegen: PNull<MobHealthRegenSettings>;
   ridingSpeedMult: number;
   bridgeInfo: PNull<MobBridgeInfo>;
+  // Impulse-driven movement (independent slide / jump / random-facing capabilities). \`walking*\` apply while
+  // moving at walking speed (idle wander + walkToPosition), \`running*\` at running speed (chase/flee/follow/
+  // runToPosition). Null = ordinary speed-driven movement.
   walkingSlideInfo: PNull<MobSlideInfo>;
   runningSlideInfo: PNull<MobSlideInfo>;
   walkingJumpInfo: PNull<MobJumpInfo>;
@@ -3067,8 +3119,12 @@ type MobSettings<TMobType extends MobType> = {
 type MobItemDrop = Readonly<{
   itemName: ItemName;
   probabilityOfDrop: number;
+
+  // If a mob drops an item, then we choose a random amount within these bounds.
   dropMinAmount: number;
   dropMaxAmount: number;
+
+  // If true, the item will "burst" out of the mob rather than just dropping.
   applyBurstImpulseToDrop?: boolean;
 }>;
 type MobBurstAttackInfo = Readonly<{
@@ -3096,8 +3152,11 @@ type MobEvadeInfo = Readonly<{
   maxAngle: number;
 }>;
 type MobChargeSpecialAttackInfo = Readonly<{
+  // Multiplier applied to the running speed during the straight dash. Defaults to 1.
   chargeSpeedMult?: number;
+  // Max heading error (radians) at which the mob is considered "facing" its target and may dash. Defaults to a small tolerance.
   faceTolerance?: number;
+  // Pose shown while dashing, reverted to the resting pose when the charge ends. Defaults to "zombie".
   chargePose?: PlayerPose;
 }>;
 type MobTameInfo = {
@@ -3129,26 +3188,41 @@ type MobHealthRegenSettings = Readonly<{
   startAfter: number;
 }>;
 type MobBridgeInfo = Readonly<{
+  // The block to place.
   blockToPlace: BlockName;
+  // If true, only place while stood on solid ground (decorates the surface walked over); if false, place
+  // even while airborne (lets the mob bridge a gap beneath itself).
   mustBeGrounded: boolean;
+  // Only overwrite a cell currently holding one of these blocks, so real terrain is never destroyed.
+  // Omitted means \`["Air"]\` (fill empty space only); an empty array replaces nothing at all, not even
+  // air. A cell already holding \`blockToPlace\` is skipped (would be a no-op).
   blocksToReplace?: readonly BlockName[];
+  // Vertical offset from the cell the mob occupies. Defaults to 0 (a surface trail); -1 places beneath the
+  // mob's feet (bridging). Non-negative offsets intersect the mob, so \`blockToPlace\` must be non-solid there.
   yOffset?: number;
+  // If a |Decaying variant exists for \`blockToPlace\`, use it to turn blocks into air after \`msToDecay\` ms.
   msToDecay?: number;
 }>;
 type MobSlideInfo = Readonly<{
+  // Horizontal impulse at the start of a slide (initial speed = impulse / mass).
   impulse: number;
+  // Lowered friction the burst coasts on (below the mob's normal friction so it carries far), restored on end.
   friction: number;
+  // How long (ms) the low-friction coast lasts.
   durationBounds: Bounds;
+  // Rest (ms) after the coast ends before the next slide. Larger = fewer slides.
   intervalBounds: Bounds;
 }>;
 type MobJumpInfo = Readonly<{
+  // Rest (ms) between hops (a hop only fires once grounded). Larger = fewer hops.
   intervalBounds: Bounds;
 }>;
 type MobRandomFacingInfo = Readonly<{
-  offsets: readonly Readonly<{
-    offset: number;
-    weight: number;
-  }>[];
+  // Weighted offsets to pick from (via getWeightedRandom); \`weight\`s are non-negative,
+  // and at least one must be greater than 0. E.g. \`[{ offset: Math.PI, weight: 2 },
+  // { offset: 0, weight: 1 }]\` faces backwards twice as often as forwards.
+  offsets: readonly Readonly<{ offset: number; weight: number }>[];
+  // Bounds (ms) between re-rolls.
   intervalBounds: Bounds;
 }>;
 type ArmourPart = _TypeOf["armourPieces"][number];
@@ -3171,11 +3245,7 @@ type ItemNameWithEffects = {
 type LevelUpBonuses = RecursiveReadonly<
   Record<MobFeedLevelUpLevels, MobLevelUpBonus>
 >;
-type EffectOpts = {
-  name: PotionEffect;
-  duration: number;
-  level: number;
-};
+type EffectOpts = { name: PotionEffect; duration: number; level: number };
 type PotionEffect = _TypeOf["potionEffects"][number];
 type MobFeedLevelUpLevels = Exclude<MobFeedLevel, 0>;
 type MobLevelUpBonus = _TypeOf["mobLevelUpBonuses"][number];
@@ -3194,45 +3264,51 @@ type MutableBounds = {
 type MobAiState = _TypeOf["mobAiStates"][number];
 type MobAiStateParams<TState extends MobAiState> = MobWorldView[TState];
 type MobWorldView = {
+  // The mob is stood still, but it still has awareness of its environment.
+  // For example: if the mob is hostile, it will still chase and attack nearby players.
   idle: null;
+  // The mob is stood still, and it has no awareness of its environment.
+  // It will not even react if provoked.
   disabled: null;
+  // The mob is stood still (idle) and is about to turn.
   idleBeforeTurning: null;
+  // The mob has chosen a new direction at random and is turning to face it.
   turning: null;
+  // The mob is stood still (idle) and is about to walk.
   idleBeforeWalking: null;
+  // The mob is walking in the direction it is facing.
   walking: null;
-  runningAway: {
-    targetId: LifeformId;
-  };
-  chasing: {
-    targetId: LifeformId;
-  };
-  turningBeforeCharging: {
-    targetId: LifeformId;
-  };
-  charging: {
-    targetId: LifeformId;
-  };
-  following: {
-    targetId: LifeformId;
-  };
-  watching: {
-    targetId: LifeformId;
-  };
-  walkingToPosition: {
-    pos: Pos;
-  };
-  runningToPosition: {
-    pos: Pos;
-  };
+  // The mob is running away from the target lifeform.
+  runningAway: { targetId: LifeformId };
+  // The mob is chasing the target lifeform.
+  chasing: { targetId: LifeformId };
+  // A charge-attack mob is stood still, rotating at its \`turnRate\` until it faces the target,
+  // at which point it captures the target's current position and transitions to \`charging\`.
+  turningBeforeCharging: { targetId: LifeformId };
+  // A charge-attack mob is dashing straight at the position of the target captured when it
+  // entered the state, ignoring the target's live position mid-dash (so the charge is dodgeable).
+  charging: { targetId: LifeformId };
+  // The mob is following the target lifeform.
+  // It will stop if it is within the \`minFollowingDistance\` (mob setting) of the target,
+  // and teleport to the target if it is outside the \`maxFollowingDistance\` (mob setting) of the target.
+  following: { targetId: LifeformId };
+  // The mob is stood still looking at the target.
+  watching: { targetId: LifeformId };
+  // The mob is walking towards the position.
+  // It will stop if it is within the \`stoppingRadius\` (mob setting) of the position.
+  walkingToPosition: { pos: Pos };
+  // The mob is running towards the position.
+  // It will stop if it is within the \`stoppingRadius\` (mob setting) of the position.
+  runningToPosition: { pos: Pos };
 };
 type MeshEntityPhysicsOpts = {
   doPhysics: boolean;
-  onCollideTerrain?: () => void;
+  onCollideTerrain?: () => void; // Unsupported for custom code
   collidesEntities?: boolean;
-  collideBits?: number;
-  collideMask?: number;
-  heightExpandAmt?: number;
-  widthExpandAmt?: number;
+  collideBits?: number; // bitmask category of this entity
+  collideMask?: number; // bitmask category of entities this entity collides with
+  heightExpandAmt?: number; // expand hitbox height by this amount
+  widthExpandAmt?: number; // expand hitbox width by this amount
 };
 type QTEType = keyof QTEDefinitions;
 type QTEClientParameters<T extends QTEType = QTEType> = {
@@ -3241,26 +3317,11 @@ type QTEClientParameters<T extends QTEType = QTEType> = {
 };
 type QTEParametersForType<T extends QTEType> = QTEDefinitions[T]["params"];
 interface QTEDefinitions {
-  progressBar: {
-    params: ProgressBarQteParams;
-    state: ProgressBarQteState;
-  };
-  timedClick: {
-    params: TimedClickQteParams;
-    state: TimedClickQteState;
-  };
-  gravityBar: {
-    params: GravityBarQteParams;
-    state: GravityBarQteState;
-  };
-  precisionBar: {
-    params: PrecisionBarQteParams;
-    state: PrecisionBarQteState;
-  };
-  rhythmClick: {
-    params: RhythmClickQteParams;
-    state: RhythmClickQteState;
-  };
+  progressBar: { params: ProgressBarQteParams; state: ProgressBarQteState };
+  timedClick: { params: TimedClickQteParams; state: TimedClickQteState };
+  gravityBar: { params: GravityBarQteParams; state: GravityBarQteState };
+  precisionBar: { params: PrecisionBarQteParams; state: PrecisionBarQteState };
+  rhythmClick: { params: RhythmClickQteParams; state: RhythmClickQteState };
 }
 type ProgressBarQteParams = Readonly<{
   /** Starting progress value (0-100) @default 30 */
@@ -3380,6 +3441,7 @@ type RhythmClickQteState = {
   lastClickResult: boolean | null;
 };
 type QTERequestId = number;
+type UiRequestId = number;
 type IngameIconName = _TypeOf["ingameIconNames"][number];
 type InbuiltEffectInfo = { inbuiltLevel: number; initiatorId?: PlayerId };
 type PlayerPhysicsState<TPhysicsType extends PhysicsType> = Readonly<{
@@ -3490,19 +3552,24 @@ type UserCallbacks =
   | "onPlayerPlayedEmote"
   | "onPlayerEnteredVehicle"
   | "onPlayerExitedVehicle"
+  | "onUiRequestResponded"
   | "doPeriodicSave";
 type WorldGamemode = _TypeOf["worldGamemodes"][number];
 type QueuedCommandId = string;
 type QueuedStatusString =
   _TypeOf["QUEUED_COMMAND_STATUS_STRINGS"][keyof _TypeOf["QUEUED_COMMAND_STATUS_STRINGS"]];
+type UiRequestClientParameters = {
+  // eslint-disable-next-line prettier/prettier
+  type: "standard";
+  title: string | CustomTextStyling;
+  icons?: string[];
+  acceptText?: string | CustomTextStyling;
+  denyText?: string | CustomTextStyling;
+  successText?: string | CustomTextStyling;
+  autoDismissAfterMs?: number;
+};
 type MultiBlockInfo = {
-  positions: {
-    block: string;
-    id: number;
-    x: number;
-    y: number;
-    z: number;
-  }[];
+  positions: { block: string; id: number; x: number; y: number; z: number }[];
 };
 type MeshEntityVehicleType = _TypeOf["meshEntityVehiclesTypes"][number];
 type BoughtShopItem = Omit<
@@ -3548,6 +3615,69 @@ interface _TypeOf {
   ];
   enchantmentTiers: readonly ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"];
   ranks: readonly ["developer", "admin", "super", "youtuber"];
+  noaActions: readonly [
+    "forward",
+    "backward",
+    "left",
+    "right",
+    "sprint",
+    "jump",
+    "crouch",
+    "primary-fire",
+    "alt-fire",
+    "SpecialAction1",
+    "SpecialAction2",
+    "ReloadGun",
+    "DropItem",
+    "mid-fire",
+    "Zoom",
+    "SwapCameraZoom",
+    "OpenInventory",
+    "OpenLobbyLeaderboard",
+    "OpenShop",
+    "OpenCharacterCustomization",
+    "OpenSettings",
+    "OpenInviteLink",
+    "OpenTasksAndLeaderboard",
+    "OpenCodeEditor",
+    "OpenEmoteWheel",
+    "HideUi",
+    "ShowDebugOverlay",
+    "HotBarSlot1",
+    "HotBarSlot2",
+    "HotBarSlot3",
+    "HotBarSlot4",
+    "HotBarSlot5",
+    "HotBarSlot6",
+    "HotBarSlot7",
+    "HotBarSlot8",
+    "HotBarSlot9",
+    "HotBarSlot10",
+    "toggleFreeCam",
+    "freeCamForward",
+    "freeCamBackward",
+    "freeCamLeft",
+    "freeCamRight",
+    "freeCamUp",
+    "freeCamDown",
+    "recordGame",
+    "recordClip",
+    "replayViewerOpen",
+    "replayPlayPause",
+    "replaySkipBack",
+    "replaySkipForward",
+    "replayChangeCameraMode",
+    "replayLoad",
+    "replaySave",
+    "replaySaveAs",
+    "replayExit",
+    "replaySpeedUp",
+    "replaySpeedDown",
+    "replayTimelineZoomIn",
+    "replayTimelineZoomOut",
+    "replayRecordKeyframe",
+    "replayExportVideo",
+  ];
   shopItemBadgeTypes: readonly ["new", "lucky"];
   playerMeshNamedNodes: readonly [
     "TorsoNode",
@@ -3563,60 +3693,64 @@ interface _TypeOf {
   particlePresets: {
     readonly damageInner: unknown;
     readonly damageOuter: unknown;
-    readonly healthRegenInner: unknown;
-    readonly healthRegenOuter: unknown;
     readonly bouncinessInner: unknown;
     readonly bouncinessOuter: unknown;
+    readonly healthRegenInner: unknown;
+    readonly healthRegenOuter: unknown;
     readonly speedInner: unknown;
     readonly speedOuter: unknown;
-    readonly miningYieldInner: unknown;
-    readonly miningYieldOuter: unknown;
     readonly damageReductionInner: unknown;
     readonly damageReductionOuter: unknown;
     readonly invisibleInner: unknown;
     readonly invisibleOuter: unknown;
     readonly jumpBoostInner: unknown;
     readonly jumpBoostOuter: unknown;
+    readonly knockbackInner: unknown;
+    readonly knockbackOuter: unknown;
     readonly poisonedInner: unknown;
     readonly poisonedOuter: unknown;
     readonly slownessInner: unknown;
     readonly slownessOuter: unknown;
     readonly weaknessInner: unknown;
     readonly weaknessOuter: unknown;
-    readonly hasteInner: unknown;
-    readonly hasteOuter: unknown;
-    readonly doubleJumpInner: unknown;
-    readonly doubleJumpOuter: unknown;
-    readonly heatResistanceInner: unknown;
-    readonly heatResistanceOuter: unknown;
-    readonly thiefInner: unknown;
-    readonly thiefOuter: unknown;
-    readonly brainRotInner: unknown;
-    readonly brainRotOuter: unknown;
-    readonly blindnessInner: unknown;
-    readonly blindnessOuter: unknown;
-    readonly pickpocketerInner: unknown;
-    readonly pickpocketerOuter: unknown;
-    readonly lifestealInner: unknown;
-    readonly lifestealOuter: unknown;
-    readonly airWalkInner: unknown;
-    readonly airWalkOuter: unknown;
-    readonly wallClimbingInner: unknown;
-    readonly wallClimbingOuter: unknown;
-    readonly poopyInner: unknown;
-    readonly poopyOuter: unknown;
-    readonly knockbackInner: unknown;
-    readonly knockbackOuter: unknown;
     readonly cleansedInner: unknown;
     readonly cleansedOuter: unknown;
     readonly instantDamageInner: unknown;
     readonly instantDamageOuter: unknown;
     readonly instantHealthInner: unknown;
     readonly instantHealthOuter: unknown;
+    readonly hasteInner: unknown;
+    readonly hasteOuter: unknown;
     readonly shieldInner: unknown;
     readonly shieldOuter: unknown;
+    readonly doubleJumpInner: unknown;
+    readonly doubleJumpOuter: unknown;
+    readonly heatResistanceInner: unknown;
+    readonly heatResistanceOuter: unknown;
+    readonly thiefInner: unknown;
+    readonly thiefOuter: unknown;
+    readonly miningYieldInner: unknown;
+    readonly miningYieldOuter: unknown;
+    readonly brainRotInner: unknown;
+    readonly brainRotOuter: unknown;
     readonly auraInner: unknown;
     readonly auraOuter: unknown;
+    readonly wallClimbingInner: unknown;
+    readonly wallClimbingOuter: unknown;
+    readonly airWalkInner: unknown;
+    readonly airWalkOuter: unknown;
+    readonly pickpocketerInner: unknown;
+    readonly pickpocketerOuter: unknown;
+    readonly lifestealInner: unknown;
+    readonly lifestealOuter: unknown;
+    readonly blindnessInner: unknown;
+    readonly blindnessOuter: unknown;
+    readonly poopyInner: unknown;
+    readonly poopyOuter: unknown;
+    readonly glowingInner: unknown;
+    readonly glowingOuter: unknown;
+    readonly nightVisionInner: unknown;
+    readonly nightVisionOuter: unknown;
     readonly xRayVisionInner: unknown;
     readonly xRayVisionOuter: unknown;
     readonly defaultFirecrackerSmall: {
@@ -3631,10 +3765,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly defaultFirecrackerLarge: {
       readonly colorGradients: TimeColorGradient[];
@@ -3648,10 +3782,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mango: unknown;
     readonly yellowFirecrackerSmall: unknown;
@@ -3707,10 +3841,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobFeedLike: {
       readonly colorGradients: TimeColorGradient[];
@@ -3724,10 +3858,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobFeedNeutral: {
       readonly colorGradients: TimeColorGradient[];
@@ -3741,10 +3875,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobFeedDisliked: {
       readonly colorGradients: TimeColorGradient[];
@@ -3758,10 +3892,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobDeath: unknown;
     readonly mobDeathSoul: unknown;
@@ -3784,10 +3918,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobSpawnerBlockPassive: {
       readonly colorGradients: [
@@ -3807,10 +3941,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobSpawnerBlockNeutral: {
       readonly colorGradients: [
@@ -3830,10 +3964,10 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobSpawnerBlockHostile: {
       readonly colorGradients: [
@@ -3853,51 +3987,14 @@ interface _TypeOf {
       readonly gravity: number[];
       readonly velocityGradients: VelocityGradient[];
       readonly blendMode: ParticleSystemBlendMode;
-      readonly hideDist: number;
       readonly dir1: number[];
       readonly dir2: number[];
       readonly manualEmitCount: number;
+      readonly hideDist: number;
     };
     readonly mobSpawnOrb: unknown;
     readonly aura: unknown;
   };
-  mobTypes: readonly [
-    "Pig",
-    "Cow",
-    "Sheep",
-    "Horse",
-    "Deer",
-    "Slime",
-    "Wolf",
-    "Wildcat",
-    "Spirit Golem",
-    "Spirit Wolf",
-    "Spirit Bear",
-    "Spirit Stag",
-    "Spirit Gorilla",
-    "Bear",
-    "Stag",
-    "Gold Watermelon Stag",
-    "Gorilla",
-    "Cave Golem",
-    "Draugr Zombie",
-    "Draugr Skeleton",
-    "Frost Golem",
-    "Frost Zombie",
-    "Frost Skeleton",
-    "Draugr Knight",
-    "Draugr Huntress",
-    "Magma Golem",
-    "Draugr Warper",
-    "Frost Wraith",
-    "Draugr Reaver",
-    "Stalker",
-    "Crone",
-    "NPC",
-    "67",
-    "Bobino Musculino",
-    "Capitano Explovissimo",
-  ];
   gunCategories: readonly [
     "semi_automatic",
     "submachine",
@@ -4076,6 +4173,43 @@ interface _TypeOf {
     readonly "Bobino Musculino": readonly ["default"];
     readonly "Capitano Explovissimo": readonly ["default"];
   };
+  mobTypes: readonly [
+    "Pig",
+    "Cow",
+    "Sheep",
+    "Horse",
+    "Deer",
+    "Slime",
+    "Wolf",
+    "Wildcat",
+    "Spirit Golem",
+    "Spirit Wolf",
+    "Spirit Bear",
+    "Spirit Stag",
+    "Spirit Gorilla",
+    "Bear",
+    "Stag",
+    "Gold Watermelon Stag",
+    "Gorilla",
+    "Cave Golem",
+    "Draugr Zombie",
+    "Draugr Skeleton",
+    "Frost Golem",
+    "Frost Zombie",
+    "Frost Skeleton",
+    "Draugr Knight",
+    "Draugr Huntress",
+    "Magma Golem",
+    "Draugr Warper",
+    "Frost Wraith",
+    "Draugr Reaver",
+    "Stalker",
+    "Crone",
+    "NPC",
+    "67",
+    "Bobino Musculino",
+    "Capitano Explovissimo",
+  ];
   mobSettings: readonly [
     "variation",
     "name",
@@ -4181,6 +4315,8 @@ interface _TypeOf {
     "Bounciness",
     "Blindness",
     "Poopy",
+    "Glowing",
+    "Night Vision",
   ];
   MAX_MOB_FEED_LEVEL: 5;
   mobLevelUpBonuses: readonly [
@@ -4259,6 +4395,8 @@ interface _TypeOf {
     "Wall Climbing",
     "Thorns",
     "Poopy",
+    "Glowing",
+    "Night Vision",
     "Draugr Knight Head",
     "Draugr Warper Head",
     "Magma Golem Head",
@@ -4326,7 +4464,22 @@ interface _TypeOf {
     "Boat",
     "Obsidian Boat",
     "Hovercraft",
+    "Yellow Kart",
+    "White Kart",
     "Red Kart",
+    "Purple Kart",
+    "Pink Kart",
+    "Orange Kart",
+    "Magenta Kart",
+    "Lime Kart",
+    "Light Gray Kart",
+    "Light Blue Kart",
+    "Green Kart",
+    "Gray Kart",
+    "Cyan Kart",
+    "Brown Kart",
+    "Blue Kart",
+    "Black Kart",
     "Off Roader",
     "Light Blue Car",
     "Speedboat",
@@ -4344,14 +4497,10 @@ interface _TypeOf {
     readonly books: number | null;
     readonly freshlyGrown: true | null;
     readonly roots: true | null;
-    /** Lava-growing variant (e.g. Chili Pepper Seeds|Lava) */
     readonly lava: true | null;
-    /** Top half of tall plants (e.g. Tall Grass|Top, Tomato Plant|Top|FreshlyGrown) */
     readonly top: true | null;
     readonly grassRoots: true | null;
-    /** "Breaking" state (e.g. Melting Ice|Breaking) */
     readonly breaking: true | null;
-    /** Flashing animation state (e.g. Timed Spike Bomb Block|Flashing) */
     readonly flashing: true | null;
     readonly charging: number | null;
     readonly direction: number | null;
@@ -4385,27 +4534,15 @@ interface _TypeOf {
     fluid: boolean;
     specialToolDrop: SpecialToolDrop;
     specialToolBonusDrops: RecursiveReadonly<
-      Record<
-        string,
-        {
-          bonusDrop: string;
-          probabilityOfDrop: number;
-        }[]
-      >
+      Record<string, { bonusDrop: string; probabilityOfDrop: number }[]>
     >;
     damage: number;
     stoodOnSpeedMultiplier: number;
     description: string | TranslatedText | CustomTextStyling;
     altActionable: boolean;
-    soundType: {
-      break: SoundType;
-      place: SoundType;
-    };
+    soundType: { break: SoundType; place: SoundType };
     unlitStandaloneMesh: boolean;
-    customPlanesInfo: {
-      textureIdx: number;
-      yRot: number;
-    }[];
+    customPlanesInfo: { textureIdx: number; yRot: number }[];
     customModelInfo: {
       yOffset?: number;
       /** Only honoured by onRotatableCreate. */
@@ -4815,6 +4952,8 @@ type ClientOptions = {
   skyLightColourOverride: string;
   /** Ambient (absence of sky light) colour override - hex string e.g. #ffffff. */
   ambientLightColourOverride: string;
+  /** The dimmest light the player can see by - hex string e.g. #ffffff. Anywhere darker is lifted to it, e.g. caves and night. */
+  visionMinLightColour: string;
   /** Held item light colour override - hex colour string e.g. #ffffff. Applied regardless of any held item. */
   heldLightColourOverride: string;
   /** Held item light range override. Distance is measured in blocks. */
@@ -5533,7 +5672,9 @@ declare var onPlayerPotionEffect: (
     | "Lifesteal"
     | "Bounciness"
     | "Blindness"
-    | "Poopy",
+    | "Poopy"
+    | "Glowing"
+    | "Night Vision",
 ) => void | "preventEffect";
 
 /**
@@ -5717,6 +5858,19 @@ declare var onPlayerBoughtShopItem: (
   itemKey: ShopItemKey,
   item: BoughtShopItem,
   userInput?: string,
+) => void;
+
+/**
+ * Called when a player responds to a UI request.
+ *
+ * @param playerId - The id of the player responding to the UI request.
+ * @param id - The id of the UI request.
+ * @param response - The response to the UI request.
+ */
+declare var onUiRequestResponded: (
+  playerId: PlayerId,
+  id: UiRequestId,
+  response: boolean,
 ) => void;
 
 /**
