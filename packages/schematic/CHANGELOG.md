@@ -1,5 +1,13 @@
 # @bloxdjs/schematic
 
+## 0.1.0
+
+### Minor Changes
+
+- [#53](https://github.com/bulebrainbrand/bloxdjs/pull/53) [`0881045`](https://github.com/bulebrainbrand/bloxdjs/commit/0881045c234b4fffec0cbbfa049b7e755cd0d766) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: update schema
+
+- [#54](https://github.com/bulebrainbrand/bloxdjs/pull/54) [`56e48e7`](https://github.com/bulebrainbrand/bloxdjs/commit/56e48e7ce0d565105a3e3ea552ede5f848a46593) Thanks [@coderabbitai](https://github.com/apps/coderabbitai)! - fix: CodeRabbit auto-fixes for PR [#53](https://github.com/bulebrainbrand/bloxdjs/issues/53)
+
 ## 0.0.5
 
 ### Patch Changes
