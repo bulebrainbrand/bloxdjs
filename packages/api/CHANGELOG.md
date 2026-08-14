@@ -1,5 +1,13 @@
 # @bloxdjs/api
 
+## 0.0.4
+
+### Patch Changes
+
+- [#52](https://github.com/bulebrainbrand/bloxdjs/pull/52) [`c4d9cb4`](https://github.com/bulebrainbrand/bloxdjs/commit/c4d9cb4a120344d130b6255d436853d02653572b) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: update api
+
+- [#50](https://github.com/bulebrainbrand/bloxdjs/pull/50) [`44b4e4b`](https://github.com/bulebrainbrand/bloxdjs/commit/44b4e4b2e0c968b810b6f1afc398e9505946feec) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: update api
+
 ## 0.0.3
 
 ### Patch Changes
