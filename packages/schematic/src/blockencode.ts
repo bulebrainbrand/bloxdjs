@@ -14,6 +14,9 @@ export function decodeBlocks(buf: Buffer): number[] {
 // ---- RLE圧縮 ----
 
 export function encodeBlocks(blocks: number[]): Buffer {
+  if (blocks.length === 0) {
+    return Buffer.from([]);
+  }
   const bytes: number[] = [];
   let currId = blocks[0];
   let currAmt = 1;
@@ -36,6 +39,11 @@ export function decodeLEB128(buf: Buffer, offset: { i: number }): number {
   let shift = 0;
   let value = 0;
   while (true) {
+    if (offset.i >= buf.length) {
+      throw new Error(
+        `Truncated LEB128: buffer ended at offset ${offset.i} before terminating byte`,
+      );
+    }
     const byte = buf[offset.i++];
     value |= (byte! & 0x7f) << shift;
     shift += 7;

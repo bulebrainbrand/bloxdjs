@@ -1,7 +1,14 @@
 import { CHUNK_SIZE, PLANE_SIZE } from "./constants";
+import type { ShortestNormailzedSchema } from "./schemas/shortest";
 import type { MiddleNormailedSchema } from "./schemas/middle";
+import type { LongestNormailedSchema } from "./schemas/longest";
 import type { BlockData, Blocks, Chunk } from "./schemas/types";
 import { getChunkSize } from "./utils";
+
+type SplitableSchema =
+  | ShortestNormailzedSchema
+  | MiddleNormailedSchema
+  | LongestNormailedSchema;
 
 function chunkKey(x: number, y: number, z: number): string {
   return `${x},${y},${z}`;
@@ -76,19 +83,36 @@ function assertAllBlockdatasAssigned(expected: number, actual: number): void {
   }
 }
 
-function makeOutSchematic(
-  schem: MiddleNormailedSchema,
+function makeOutSchematic<T extends SplitableSchema>(
+  schem: T,
   outSize: [number, number, number],
   chunks: Chunk[],
-  blockdatas: BlockData[],
-): MiddleNormailedSchema {
-  return {
+  blockdatas: BlockData[] | undefined,
+  sliceOffset?: [number, number, number],
+): T {
+  const base: ShortestNormailzedSchema = {
     name: schem.name,
     pos: [0, 0, 0],
     size: outSize,
     chunks,
-    blockdatas,
   };
+
+  const withBlockdatas: ShortestNormailzedSchema | MiddleNormailedSchema =
+    "blockdatas" in schem ? { ...base, blockdatas: blockdatas ?? [] } : base;
+
+  if ("globalPosition" in schem) {
+    const offset = sliceOffset || [0, 0, 0];
+    return {
+      ...withBlockdatas,
+      globalPosition: [
+        schem.globalPosition[0] + offset[0],
+        schem.globalPosition[1] + offset[1],
+        schem.globalPosition[2] + offset[2],
+      ],
+    } as T;
+  }
+
+  return withBlockdatas as T;
 }
 
 const buildXAlignedBlocks = (srcLeft: Chunk): number[] => srcLeft.blocks;
@@ -161,25 +185,28 @@ function collectOutputChunksX(
   return outChunks;
 }
 
-const buildSlicedSchematicX = (
-  schem: MiddleNormailedSchema,
+const buildSlicedSchematicX = <T extends SplitableSchema>(
+  schem: T,
   chunkMap: Map<string, Chunk>,
   range: AxisSliceRange,
   chunkCountY: number,
   chunkCountZ: number,
-): MiddleNormailedSchema => {
+): T => {
   const outChunks = collectOutputChunksX(
     chunkMap,
     range,
     chunkCountY,
     chunkCountZ,
   );
-  const { sliced } = sliceBlockdatas(
-    schem.blockdatas,
-    "blockX",
-    range.sliceStart,
-    range.sliceEnd,
-  );
+  const sliced =
+    "blockdatas" in schem
+      ? sliceBlockdatas(
+          schem.blockdatas,
+          "blockX",
+          range.sliceStart,
+          range.sliceEnd,
+        ).sliced
+      : undefined;
 
   const [, sizeY, sizeZ] = schem.size;
   return makeOutSchematic(
@@ -187,13 +214,14 @@ const buildSlicedSchematicX = (
     [range.sliceWidth, sizeY, sizeZ],
     outChunks,
     sliced,
+    [range.sliceStart, 0, 0],
   );
 };
 
-export const splitSchematicByX = (
-  schem: MiddleNormailedSchema,
+export const splitSchematicByX = <T extends SplitableSchema>(
+  schem: T,
   sliceSize: number,
-): MiddleNormailedSchema[] => {
+): T[] => {
   const [sizeX] = schem.size;
   const [, chunkSizeY, chunkSizeZ] = getChunkSize(schem.size);
 
@@ -293,25 +321,28 @@ function collectOutputChunksY(
   return outChunks;
 }
 
-function buildSlicedSchematicY(
-  schem: MiddleNormailedSchema,
+function buildSlicedSchematicY<T extends SplitableSchema>(
+  schem: T,
   chunkMap: Map<string, Chunk>,
   range: AxisSliceRange,
   chunkCountX: number,
   chunkCountZ: number,
-): { schematic: MiddleNormailedSchema; assignedBlockdataCount: number } {
+): { schematic: T; assignedBlockdataCount: number } {
   const outChunks = collectOutputChunksY(
     chunkMap,
     range,
     chunkCountX,
     chunkCountZ,
   );
-  const { sliced, count } = sliceBlockdatas(
-    schem.blockdatas,
-    "blockY",
-    range.sliceStart,
-    range.sliceEnd,
-  );
+  const { sliced, count } =
+    "blockdatas" in schem
+      ? sliceBlockdatas(
+          schem.blockdatas,
+          "blockY",
+          range.sliceStart,
+          range.sliceEnd,
+        )
+      : { sliced: undefined, count: 0 };
 
   const [sizeX, , sizeZ] = schem.size;
   const schematic = makeOutSchematic(
@@ -319,15 +350,16 @@ function buildSlicedSchematicY(
     [sizeX, range.sliceWidth, sizeZ],
     outChunks,
     sliced,
+    [0, range.sliceStart, 0],
   );
 
   return { schematic, assignedBlockdataCount: count };
 }
 
-export function splitSchematicByY(
-  schem: MiddleNormailedSchema,
+export function splitSchematicByY<T extends SplitableSchema>(
+  schem: T,
   sliceSize: number,
-): MiddleNormailedSchema[] {
+): T[] {
   const [sizeX, sizeY, sizeZ] = schem.size;
   const chunkCountX = Math.ceil(sizeX / CHUNK_SIZE);
   const chunkCountZ = Math.ceil(sizeZ / CHUNK_SIZE);
@@ -335,7 +367,7 @@ export function splitSchematicByY(
   const chunkMap = buildChunkMap(schem.chunks);
   const ranges = computeAxisSliceRanges(sizeY, sliceSize);
 
-  const result: MiddleNormailedSchema[] = [];
+  const result: T[] = [];
   let assignedCount = 0;
 
   for (const range of ranges) {
@@ -350,7 +382,9 @@ export function splitSchematicByY(
     assignedCount += assignedBlockdataCount;
   }
 
-  assertAllBlockdatasAssigned(schem.blockdatas.length, assignedCount);
+  if ("blockdatas" in schem) {
+    assertAllBlockdatasAssigned(schem.blockdatas.length, assignedCount);
+  }
   return result;
 }
 
@@ -436,25 +470,28 @@ function collectOutputChunksZ(
   return outChunks;
 }
 
-function buildSlicedSchematicZ(
-  schem: MiddleNormailedSchema,
+function buildSlicedSchematicZ<T extends SplitableSchema>(
+  schem: T,
   chunkMap: Map<string, Chunk>,
   range: AxisSliceRange,
   chunkCountX: number,
   chunkCountY: number,
-): { schematic: MiddleNormailedSchema; assignedBlockdataCount: number } {
+): { schematic: T; assignedBlockdataCount: number } {
   const outChunks = collectOutputChunksZ(
     chunkMap,
     range,
     chunkCountX,
     chunkCountY,
   );
-  const { sliced, count } = sliceBlockdatas(
-    schem.blockdatas,
-    "blockZ",
-    range.sliceStart,
-    range.sliceEnd,
-  );
+  const { sliced, count } =
+    "blockdatas" in schem
+      ? sliceBlockdatas(
+          schem.blockdatas,
+          "blockZ",
+          range.sliceStart,
+          range.sliceEnd,
+        )
+      : { sliced: undefined, count: 0 };
 
   const [sizeX, sizeY] = schem.size;
   const schematic = makeOutSchematic(
@@ -462,15 +499,16 @@ function buildSlicedSchematicZ(
     [sizeX, sizeY, range.sliceWidth],
     outChunks,
     sliced,
+    [0, 0, range.sliceStart],
   );
 
   return { schematic, assignedBlockdataCount: count };
 }
 
-export function splitSchematicByZ(
-  schem: MiddleNormailedSchema,
+export function splitSchematicByZ<T extends SplitableSchema>(
+  schem: T,
   sliceSize: number,
-): MiddleNormailedSchema[] {
+): T[] {
   const [sizeX, sizeY, sizeZ] = schem.size;
   const chunkCountX = Math.ceil(sizeX / CHUNK_SIZE);
   const chunkCountY = Math.ceil(sizeY / CHUNK_SIZE);
@@ -478,7 +516,7 @@ export function splitSchematicByZ(
   const chunkMap = buildChunkMap(schem.chunks);
   const ranges = computeAxisSliceRanges(sizeZ, sliceSize);
 
-  const result: MiddleNormailedSchema[] = [];
+  const result: T[] = [];
   let assignedCount = 0;
 
   for (const range of ranges) {
@@ -493,7 +531,9 @@ export function splitSchematicByZ(
     assignedCount += assignedBlockdataCount;
   }
 
-  assertAllBlockdatasAssigned(schem.blockdatas.length, assignedCount);
+  if ("blockdatas" in schem) {
+    assertAllBlockdatasAssigned(schem.blockdatas.length, assignedCount);
+  }
   return result;
 }
 
@@ -501,11 +541,11 @@ export function splitSchematicByZ(
 // 統一エントリポイント
 // ------------------------------------------------------------------
 
-export function splitSchematicByAxis(
-  schem: MiddleNormailedSchema,
+export function splitSchematicByAxis<T extends SplitableSchema>(
+  schem: T,
   sliceSize: number,
   axis: "x" | "y" | "z",
-): MiddleNormailedSchema[] {
+): T[] {
   switch (axis) {
     case "x":
       return splitSchematicByX(schem, sliceSize);
