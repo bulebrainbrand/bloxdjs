@@ -1,5 +1,6 @@
 import { CHUNK_SIZE, PLANE_SIZE } from "./constants";
-import type { BlockData, Blocks, Chunk, Schematic } from "./types";
+import type { MiddleNormailedSchema } from "./schemas/middle";
+import type { BlockData, Blocks, Chunk } from "./schemas/types";
 import { getChunkSize } from "./utils";
 
 function chunkKey(x: number, y: number, z: number): string {
@@ -76,11 +77,11 @@ function assertAllBlockdatasAssigned(expected: number, actual: number): void {
 }
 
 function makeOutSchematic(
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   outSize: [number, number, number],
   chunks: Chunk[],
   blockdatas: BlockData[],
-): Schematic {
+): MiddleNormailedSchema {
   return {
     name: schem.name,
     pos: [0, 0, 0],
@@ -161,12 +162,12 @@ function collectOutputChunksX(
 }
 
 const buildSlicedSchematicX = (
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   chunkMap: Map<string, Chunk>,
   range: AxisSliceRange,
   chunkCountY: number,
   chunkCountZ: number,
-): Schematic => {
+): MiddleNormailedSchema => {
   const outChunks = collectOutputChunksX(
     chunkMap,
     range,
@@ -190,9 +191,9 @@ const buildSlicedSchematicX = (
 };
 
 export const splitSchematicByX = (
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   sliceSize: number,
-): Schematic[] => {
+): MiddleNormailedSchema[] => {
   const [sizeX] = schem.size;
   const [, chunkSizeY, chunkSizeZ] = getChunkSize(schem.size);
 
@@ -293,12 +294,12 @@ function collectOutputChunksY(
 }
 
 function buildSlicedSchematicY(
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   chunkMap: Map<string, Chunk>,
   range: AxisSliceRange,
   chunkCountX: number,
   chunkCountZ: number,
-): { schematic: Schematic; assignedBlockdataCount: number } {
+): { schematic: MiddleNormailedSchema; assignedBlockdataCount: number } {
   const outChunks = collectOutputChunksY(
     chunkMap,
     range,
@@ -324,9 +325,9 @@ function buildSlicedSchematicY(
 }
 
 export function splitSchematicByY(
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   sliceSize: number,
-): Schematic[] {
+): MiddleNormailedSchema[] {
   const [sizeX, sizeY, sizeZ] = schem.size;
   const chunkCountX = Math.ceil(sizeX / CHUNK_SIZE);
   const chunkCountZ = Math.ceil(sizeZ / CHUNK_SIZE);
@@ -334,7 +335,7 @@ export function splitSchematicByY(
   const chunkMap = buildChunkMap(schem.chunks);
   const ranges = computeAxisSliceRanges(sizeY, sliceSize);
 
-  const result: Schematic[] = [];
+  const result: MiddleNormailedSchema[] = [];
   let assignedCount = 0;
 
   for (const range of ranges) {
@@ -436,12 +437,12 @@ function collectOutputChunksZ(
 }
 
 function buildSlicedSchematicZ(
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   chunkMap: Map<string, Chunk>,
   range: AxisSliceRange,
   chunkCountX: number,
   chunkCountY: number,
-): { schematic: Schematic; assignedBlockdataCount: number } {
+): { schematic: MiddleNormailedSchema; assignedBlockdataCount: number } {
   const outChunks = collectOutputChunksZ(
     chunkMap,
     range,
@@ -467,9 +468,9 @@ function buildSlicedSchematicZ(
 }
 
 export function splitSchematicByZ(
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   sliceSize: number,
-): Schematic[] {
+): MiddleNormailedSchema[] {
   const [sizeX, sizeY, sizeZ] = schem.size;
   const chunkCountX = Math.ceil(sizeX / CHUNK_SIZE);
   const chunkCountY = Math.ceil(sizeY / CHUNK_SIZE);
@@ -477,7 +478,7 @@ export function splitSchematicByZ(
   const chunkMap = buildChunkMap(schem.chunks);
   const ranges = computeAxisSliceRanges(sizeZ, sliceSize);
 
-  const result: Schematic[] = [];
+  const result: MiddleNormailedSchema[] = [];
   let assignedCount = 0;
 
   for (const range of ranges) {
@@ -501,10 +502,10 @@ export function splitSchematicByZ(
 // ------------------------------------------------------------------
 
 export function splitSchematicByAxis(
-  schem: Schematic,
+  schem: MiddleNormailedSchema,
   sliceSize: number,
   axis: "x" | "y" | "z",
-): Schematic[] {
+): MiddleNormailedSchema[] {
   switch (axis) {
     case "x":
       return splitSchematicByX(schem, sliceSize);

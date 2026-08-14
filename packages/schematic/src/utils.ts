@@ -1,12 +1,14 @@
 import { CHUNK_SIZE } from "./constants";
-import type { Blocks, Schematic } from "./types";
+import type { Blocks } from "./schemas/types";
+import type { ShortestNormailzedSchema } from "./schemas/shortest";
 
 export const getBlockByBlocks =
   (blocks: Blocks) => (x: number, y: number, z: number) =>
     blocks[calcBlocksIndex(x, y, z)];
 
 export const getBlockBySchematic =
-  (schematic: Schematic) => (x: number, y: number, z: number) => {
+  (schematic: ShortestNormailzedSchema) =>
+  (x: number, y: number, z: number) => {
     const chunkPos = getChunkPos([x, y, z]);
     const chunk = schematic.chunks.find((chunk) =>
       arrayEquals(chunk.pos, chunkPos),
