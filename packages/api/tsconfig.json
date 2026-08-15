@@ -17,6 +17,7 @@
         "noCheck": true
     },
     "include": [
-        "./src/**/*.ts"
+        "./src/**/*.ts",
+        "src/empty.js"
     ],
 }

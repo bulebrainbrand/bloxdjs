@@ -13,10 +13,12 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./src/empty.js"
     },
     "./raw": {
-      "types": "./src/index.ts"
+      "types": "./src/index.ts",
+      "default": "./src/empty.js"
     }
   },
   "scripts": {
