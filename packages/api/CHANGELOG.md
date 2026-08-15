@@ -1,5 +1,11 @@
 # @bloxdjs/api
 
+## 0.0.5
+
+### Patch Changes
+
+- [#65](https://github.com/bulebrainbrand/bloxdjs/pull/65) [`cef8e01`](https://github.com/bulebrainbrand/bloxdjs/commit/cef8e016236c3c86ae4909b7e9996372e4a0e3fd) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add exports "./raw"
+
 ## 0.0.4
 
 ### Patch Changes
