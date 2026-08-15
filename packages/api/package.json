@@ -4,7 +4,8 @@
   "private": false,
   "type": "module",
   "files": [
-    "dist/"
+    "dist/",
+    "src/"
   ],
   "repository": {
     "type": "git",
@@ -13,6 +14,9 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts"
+    },
+    "./raw": {
+      "types": "./src/index.ts"
     }
   },
   "scripts": {
