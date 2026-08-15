@@ -9,7 +9,7 @@ const shortestAvroSchema = avsc.Type.forSchema({
     {
       name: "headers",
       type: { name: "fixed_header", type: "fixed", size: 4 },
-      default: "\u0004\u0000\u0000\u0000",
+      default: "\u0000\u0000\u0000\u0000",
     },
     { name: "name", type: "string" },
     { name: "x", type: "int" },
@@ -85,7 +85,7 @@ export const ShortestSchema: Schema<
       sizeX: schema.size[0],
       sizeY: schema.size[1],
       sizeZ: schema.size[2],
-      headers: Buffer.from("\u0004\u0000\u0000\u0000"),
+      headers: Buffer.from("\u0000\u0000\u0000\u0000"),
       chunks: encodeChunks(schema.chunks),
     };
   },
