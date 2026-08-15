@@ -1,5 +1,11 @@
 # @bloxdjs/api
 
+## 0.0.6
+
+### Patch Changes
+
+- [#67](https://github.com/bulebrainbrand/bloxdjs/pull/67) [`caa0b70`](https://github.com/bulebrainbrand/bloxdjs/commit/caa0b705c400cfb12904c8ec0f49652defc5898f) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: update api
+
 ## 0.0.5
 
 ### Patch Changes
