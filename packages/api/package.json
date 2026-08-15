@@ -13,6 +13,9 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts"
+    },
+    "./raw": {
+      "types": "./src/index.ts"
     }
   },
   "scripts": {
