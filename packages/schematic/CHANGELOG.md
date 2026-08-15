@@ -1,5 +1,13 @@
 # @bloxdjs/schematic
 
+## 0.1.2
+
+### Patch Changes
+
+- [#62](https://github.com/bulebrainbrand/bloxdjs/pull/62) [`68932cc`](https://github.com/bulebrainbrand/bloxdjs/commit/68932ccd63a5f2c8002e2231d0cebd0778844417) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - fix: add export of "converter"
+
+- [#60](https://github.com/bulebrainbrand/bloxdjs/pull/60) [`c42bfa1`](https://github.com/bulebrainbrand/bloxdjs/commit/c42bfa11badfd952504eedb1dc9fdc001dbe1481) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add converter
+
 ## 0.1.1
 
 ### Patch Changes
