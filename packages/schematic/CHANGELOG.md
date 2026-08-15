@@ -1,5 +1,11 @@
 # @bloxdjs/schematic
 
+## 0.1.3
+
+### Patch Changes
+
+- [#63](https://github.com/bulebrainbrand/bloxdjs/pull/63) [`e81581d`](https://github.com/bulebrainbrand/bloxdjs/commit/e81581d62eda0b8448bbd6f3e17cf7e4506e2a0d) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - fix:shortestSchema Header
+
 ## 0.1.2
 
 ### Patch Changes
