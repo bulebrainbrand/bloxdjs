@@ -4,5 +4,6 @@ export * from "./schemas/longest";
 export * from "./schemas/middle";
 export * from "./schemas/shortest";
 export * from "./schemas/types";
+export * from "./schemas/converter";
 export * from "./blockencode";
 export * from "./split";
