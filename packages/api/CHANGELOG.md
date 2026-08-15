@@ -1,5 +1,11 @@
 # @bloxdjs/api
 
+## 0.0.7
+
+### Patch Changes
+
+- [#69](https://github.com/bulebrainbrand/bloxdjs/pull/69) [`1ff3ae7`](https://github.com/bulebrainbrand/bloxdjs/commit/1ff3ae71961b4630a84f18e359563b250909f93e) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: add default empty js
+
 ## 0.0.6
 
 ### Patch Changes
