@@ -804,6 +804,13 @@ interface GameApi {
    */
   isMobile(playerId: PlayerId): boolean;
   /**
+   * Get the amount of a given currency a player has.
+   * @param playerId
+   * @param currencyId
+   * @returns The amount of the currency, or null if the currency is not defined.
+   */
+  getCurrencyAmount(playerId: PlayerId, currencyId: string): PNull<number>;
+  /**
    * Create a dropped item.
    * @param x
    * @param y
@@ -2285,10 +2292,59 @@ interface GameApi {
    */
   deletePlayerDbValue(playerId: PlayerId, key: string): void;
   /**
-   * Deletes all database values that are saved per player.
+   * Deletes all database values that are saved per player, including persisted currencies.
    * @param playerId
    */
   deleteAllPlayerDbValues(playerId: PlayerId): void;
+  /**
+   * Dynamically define a currency for a player and show it on the HUD.
+   * Amounts will persist between sessions if \`persistent\` is set to true.
+   * Persistent currencies count towards db length limits.
+   *
+   * Example usage:
+   * \`\`\`js
+   * api.setCurrency(myId, "myCurrency", { amount: 100, icon: "coins", iconColour: "blue", persistent: true })
+   * \`\`\`
+   *
+   * @param playerId
+   * @param currencyId
+   * @param info
+   */
+  setCurrency(
+    playerId: PlayerId,
+    currencyId: string,
+    info: UgcCurrencyInfo,
+  ): void;
+  /**
+   * Delete a currency from a player. This will make the currency unknown to the player.
+   * @param playerId
+   * @param currencyId
+   */
+  deleteCurrency(playerId: PlayerId, currencyId: string): void;
+  /**
+   * Set the amount of a currency a player has. For persistent currencies, amount/subtext count towards db length limits.
+   * @param playerId
+   * @param currencyId
+   * @param amount
+   * @param subtext
+   */
+  setCurrencyAmount(
+    playerId: PlayerId,
+    currencyId: string,
+    amount: number,
+    subtext?: string | CustomTextStyling,
+  ): void;
+  /**
+   * Give a player an amount of currency. Can be negative to remove money.
+   * @param playerId
+   * @param currencyId
+   * @param amount
+   */
+  giveCurrencyAmount(
+    playerId: PlayerId,
+    currencyId: string,
+    amount: number,
+  ): void;
   /**
    * Set a default value to be returned by your callback code if it throws an error.
    *
@@ -2402,13 +2458,13 @@ interface GameApi {
    *
    * Example Usage:
    * \`\`\`js
-   * const uiRequestId = api.addUiRequest(playerId, {
+   * const myRequestId = api.addUiRequest(playerId, {
    *   type: "standard",
    *   title: "Do you want to join the game?",
    * }, 5000)
    *
-   * onUiRequestResponded = (playerId, id, response) => {
-   *   if(id === uiRequestId) {
+   * onUiRequestResponded = (playerId, uiRequestId, response) => {
+   *   if (uiRequestId === myRequestId) {
    *     api.log(response)
    *   }
    * }
@@ -2424,7 +2480,31 @@ interface GameApi {
     playerId: PlayerId,
     parameters: UiRequestClientParameters,
     timeoutAfterMs?: number,
-  ): number;
+  ): UiRequestId;
+  /**
+   * Add a request for the player to answer in the form of a popup. This blocks the player from doing anything else until they respond.
+   *
+   * Use onUiRequestResponded to handle the response.
+   *
+   * Example Usage:
+   * \`\`\`js
+   * const myRequestId = api.addUiRequestPopup(playerId, "Do you want to join the game?")
+   *
+   * onUiRequestResponded = (playerId, uiRequestId, response) => {
+   *   if (uiRequestId === myRequestId) {
+   *     api.log(response)
+   *   }
+   * }
+   * \`\`\`
+   *
+   * @param playerId The ID of the player to add the request to.
+   * @param requestText The text of the request.
+   * @returns The ID of the request, or null if the request was rate limited. Pass into deleteUiRequest or cross-reference with onUiRequestResponded.
+   */
+  addUiRequestPopup(
+    playerId: PlayerId,
+    requestText: string,
+  ): PNull<UiRequestId>;
   /**
    * Log a message to chat.
    */
@@ -3483,6 +3563,14 @@ type MeshParticleSystemUpdate = {
   particleSystemPlayingState?: boolean;
   particleSystemColorGradients?: TimeColorGradient[];
 };
+type UgcCurrencyInfo = {
+  amount: number;
+  icon: string;
+  iconColour?: string;
+  persistent?: boolean;
+  hidden?: boolean;
+  subtext?: string | CustomTextStyling;
+};
 type UserCallbacks =
   | "tick"
   | "onClose"
@@ -3559,8 +3647,7 @@ type QueuedCommandId = string;
 type QueuedStatusString =
   _TypeOf["QUEUED_COMMAND_STATUS_STRINGS"][keyof _TypeOf["QUEUED_COMMAND_STATUS_STRINGS"]];
 type UiRequestClientParameters = {
-  // eslint-disable-next-line prettier/prettier
-  type: "standard";
+  type: "standard" | "rewardedAd";
   title: string | CustomTextStyling;
   icons?: string[];
   acceptText?: string | CustomTextStyling;
