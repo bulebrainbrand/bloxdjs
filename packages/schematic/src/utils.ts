@@ -1,6 +1,11 @@
 import { CHUNK_SIZE } from "./constants";
-import type { Blocks } from "./schemas/types";
-import type { ShortestNormailzedSchema } from "./schemas/shortest";
+import type { Blocks, SchemaObject } from "./schemas/types";
+import {
+  ShortestSchema,
+  type ShortestNormailzedSchema,
+} from "./schemas/shortest";
+import { MiddleSchema } from "./schemas/middle";
+import { LongestSchema } from "./schemas/longest";
 
 export const getBlockByBlocks =
   (blocks: Blocks) => (x: number, y: number, z: number) =>
@@ -63,3 +68,20 @@ export const getChunkLocalPos = ([x, y, z]: [number, number, number]): [
 
 export const sliceBlocksByX = (blocks: Blocks, startX: number, endX: number) =>
   blocks.slice(startX * 32 * 32, endX * 32 * 32);
+
+export const bufferToSchemaObject = (buffer: Buffer): SchemaObject => {
+  try {
+    const result = ShortestSchema.bufferToSchemaObject(buffer);
+    return { type: "shortest", shortest: result };
+  } catch {}
+  try {
+    const result = MiddleSchema.bufferToSchemaObject(buffer);
+    return { type: "middle", middle: result };
+  } catch {}
+  try {
+    const result = LongestSchema.bufferToSchemaObject(buffer);
+    return { type: "longest", longest: result };
+  } catch (e) {
+    throw new TypeError(`unexpcted buffer`, { cause: e });
+  }
+};

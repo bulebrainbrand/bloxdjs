@@ -102,6 +102,7 @@ function makeOutSchematic<T extends SplitableSchema>(
 
   if ("globalPosition" in schem) {
     const offset = sliceOffset || [0, 0, 0];
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     return {
       ...withBlockdatas,
       globalPosition: [
@@ -112,6 +113,7 @@ function makeOutSchematic<T extends SplitableSchema>(
     } as T;
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return withBlockdatas as T;
 }
 
