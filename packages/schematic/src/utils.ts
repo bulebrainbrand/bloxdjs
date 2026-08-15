@@ -82,6 +82,6 @@ export const bufferToSchemaObject = (buffer: Buffer): SchemaObject => {
     const result = LongestSchema.bufferToSchemaObject(buffer);
     return { type: "longest", longest: result };
   } catch (e) {
-    throw new TypeError(`unexpcted buffer`, { cause: e });
+    throw new TypeError(`unexpected buffer`, { cause: e });
   }
 };
