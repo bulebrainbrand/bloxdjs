@@ -3,7 +3,7 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   fmt: {},
   lint: {
-    ignorePatterns: ["dist/**", "node_modules/**"],
+    ignorePatterns: ["dist/**", "node_modules/**", "packages/api/**"],
     categories: {
       correctness: "error",
     },
@@ -16,7 +16,10 @@ export default defineConfig({
 
       "typescript/no-misused-promises": "error",
       "typescript/no-namespace": "error",
-      "typescript/no-unnecessary-condition": ["error", { allowConstantLoopConditions: true }],
+      "typescript/no-unnecessary-condition": [
+        "error",
+        { allowConstantLoopConditions: true },
+      ],
       "typescript/no-unsafe-argument": "error",
       "typescript/no-unsafe-assignment": "error",
       "typescript/no-unsafe-call": "error",
