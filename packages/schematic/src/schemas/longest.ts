@@ -54,6 +54,24 @@ const longestAvroSchema = avsc.Type.forSchema({
     { name: "globalX", type: "int", default: 0 },
     { name: "globalY", type: "int", default: 0 },
     { name: "globalZ", type: "int", default: 0 },
+    {
+      name: "worldcode",
+      type: [
+        "null",
+        {
+          type: "record",
+          name: "worldcode",
+          fields: [
+            { name: "code", type: "string", default: "" },
+            { name: "dbId", type: "string", default: "" },
+            { name: "flag", type: "int", default: 0 },
+            { name: "flag2", type: "int", default: 0 },
+          ],
+        },
+      ],
+      default: null,
+    },
+    { name: "somebool", type: "boolean", default: false },
   ],
 });
 export type LongestSchemaObject = MiddleSchemaObject & {
