@@ -1,5 +1,11 @@
 # @bloxdjs/schematic
 
+## 0.1.4
+
+### Patch Changes
+
+- [#71](https://github.com/bulebrainbrand/bloxdjs/pull/71) [`50fe987`](https://github.com/bulebrainbrand/bloxdjs/commit/50fe9878691f25dbccf1e5a8751529ad461910d1) Thanks [@bulebrainbrand](https://github.com/bulebrainbrand)! - feat: update schematic
+
 ## 0.1.3
 
 ### Patch Changes
