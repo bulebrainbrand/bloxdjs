@@ -84,10 +84,7 @@ export type LongestNormailedSchema = MiddleNormailedSchema & {
   globalPosition: [number, number, number];
 };
 
-export const LongestSchema: Schema<
-  LongestSchemaObject,
-  LongestNormailedSchema
-> = {
+export const LongestSchema: Schema<LongestSchemaObject, LongestNormailedSchema> = {
   avroType: longestAvroSchema,
   bufferToSchemaObject(buffer) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion

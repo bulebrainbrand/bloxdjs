@@ -6,11 +6,9 @@ export const ok = <T>(value: T): Ok<T> => ({ ok: true, value });
 
 export const err = <E>(error: E): Err<E> => ({ ok: false, error });
 
-export const isOk = <T>(result: Result<T, unknown>): result is Ok<T> =>
-  result.ok;
+export const isOk = <T>(result: Result<T, unknown>): result is Ok<T> => result.ok;
 
-export const isErr = <E>(result: Result<unknown, E>): result is Err<E> =>
-  !result.ok;
+export const isErr = <E>(result: Result<unknown, E>): result is Err<E> => !result.ok;
 
 export const match = <T, E, RT, RE>(
   result: Result<T, E>,

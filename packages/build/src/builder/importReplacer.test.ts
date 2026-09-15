@@ -128,12 +128,7 @@ describe("generateImportData test", () => {
   });
   it("should return normal variable name", () => {
     const ast = t.importDeclaration(
-      [
-        t.importSpecifier(
-          t.identifier("importName"),
-          t.identifier("importTarget"),
-        ),
-      ],
+      [t.importSpecifier(t.identifier("importName"), t.identifier("importTarget"))],
       t.stringLiteral("./importFile"),
     );
     expect(generateImportData(ast)).toStrictEqual({
@@ -154,10 +149,7 @@ describe("generateImportData test", () => {
   it("should return normal variable and default variable name", () => {
     const ast = t.importDeclaration(
       [
-        t.importSpecifier(
-          t.identifier("importName"),
-          t.identifier("importTarget"),
-        ),
+        t.importSpecifier(t.identifier("importName"), t.identifier("importTarget")),
         t.importDefaultSpecifier(t.identifier("defaultImport")),
       ],
       t.stringLiteral("./importFile"),
@@ -174,10 +166,7 @@ describe("generateImportData test", () => {
     const ast = t.importDeclaration(
       [
         t.importDefaultSpecifier(t.identifier("defaultImport")),
-        t.importSpecifier(
-          t.identifier("importName"),
-          t.identifier("importTarget"),
-        ),
+        t.importSpecifier(t.identifier("importName"), t.identifier("importTarget")),
         t.importNamespaceSpecifier(t.identifier("namespaceImport")),
       ],
       t.stringLiteral("./importFile"),
@@ -235,8 +224,6 @@ describe("getModuleKeyFromImportDeclaration test", () => {
 
 describe("generateVariableDeclaratorFromNormalImportDataArray test", () => {
   it("when received empty array,return null", () => {
-    expect(
-      generateVariableDeclaratorFromNormalImportDataArray([], "b"),
-    ).toStrictEqual(null);
+    expect(generateVariableDeclaratorFromNormalImportDataArray([], "b")).toStrictEqual(null);
   });
 });

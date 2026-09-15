@@ -1,20 +1,18 @@
 {
-    "compilerOptions": {
-        "target": "esnext",
-        "moduleDetection": "force",
-        "module": "esnext",
-        "moduleResolution": "bundler",
-        "resolveJsonModule": true,
-        "types": [],
-        "strict": true,
-        "declaration": true,
-        "esModuleInterop": true,
-        "isolatedModules": true,
-        "verbatimModuleSyntax": true,
-        "skipLibCheck": true,
-        "composite": true,
-    },
-    "include": [
-        "./src/**/*.ts"
-    ],
+  "compilerOptions": {
+    "target": "esnext",
+    "moduleDetection": "force",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "types": [],
+    "strict": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "composite": true
+  },
+  "include": ["./src/**/*.ts"]
 }

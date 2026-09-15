@@ -37,9 +37,7 @@ describe("test getNameFromIdentifierOrStringLiteral", () => {
     expect(getNameFromIdentifierOrStringLiteral(identifier("aaa"))).toBe("aaa");
   });
   it("should return value if input is stringLiteral", () => {
-    expect(getNameFromIdentifierOrStringLiteral(stringLiteral("aaa"))).toBe(
-      "aaa",
-    );
+    expect(getNameFromIdentifierOrStringLiteral(stringLiteral("aaa"))).toBe("aaa");
   });
 });
 
@@ -48,9 +46,7 @@ describe("test getModuleKeyOrThrow", () => {
     expect(getModuleKeyOrThrow(new Map([["name", "1"]]), "name")).toBe("1");
   });
   it("when input path is not exists, throw", () => {
-    expect(() =>
-      getModuleKeyOrThrow(new Map([["name", "1"]]), "non_exists_name"),
-    ).throw();
+    expect(() => getModuleKeyOrThrow(new Map([["name", "1"]]), "non_exists_name")).throw();
   });
 });
 

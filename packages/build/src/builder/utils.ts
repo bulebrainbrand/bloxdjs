@@ -31,13 +31,10 @@ export const resolvePathOrThrowError = (
   tsconfigPath?: string,
 ): string => {
   const result = resolvePath(exporter, importer, fs, tsconfigPath);
-  if (result === false)
-    throw new TypeError(`can't resolved import "${exporter}" on ${importer}`);
+  if (result === false) throw new TypeError(`can't resolved import "${exporter}" on ${importer}`);
   return result;
 };
-export const generateGlobalThisModuleMemberExpression = (
-  moduleKey: string,
-): t.MemberExpression => {
+export const generateGlobalThisModuleMemberExpression = (moduleKey: string): t.MemberExpression => {
   return t.memberExpression(
     t.memberExpression(
       t.identifier("globalThis"),
@@ -49,10 +46,7 @@ export const generateGlobalThisModuleMemberExpression = (
 };
 
 export const isNodePackage = (name: string) => !name.startsWith(".");
-export const getModuleKeyOrThrow = (
-  nameMap: Map<string, string>,
-  path: string,
-): string => {
+export const getModuleKeyOrThrow = (nameMap: Map<string, string>, path: string): string => {
   const key = nameMap.get(path);
   if (key == null) {
     throw new TypeError(`${path} mapped name is not found. this is bug.`);
@@ -68,12 +62,7 @@ export const resolveTargetModuleKey = (
   tsconfigPath?: string,
 ): string | null => {
   if (isNodePackage(source)) return null;
-  const exporterPath = resolvePathOrThrowError(
-    source,
-    fileName,
-    fs,
-    tsconfigPath,
-  );
+  const exporterPath = resolvePathOrThrowError(source, fileName, fs, tsconfigPath);
   return getModuleKeyOrThrow(nameMap, exporterPath);
 };
 

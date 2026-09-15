@@ -36,12 +36,7 @@ interface GameApi {
    * @param y
    * @param z
    */
-  setPosition(
-    entityId: EntityId,
-    x: number | number[],
-    y?: number,
-    z?: number,
-  ): void;
+  setPosition(entityId: EntityId, x: number | number[], y?: number, z?: number): void;
   /**
    * Get the scale of a lifeform.
    * @param lifeformId
@@ -339,11 +334,7 @@ interface GameApi {
    * @param itemKey - The unique key for the item
    * @param item - The shop item to create (will be mutated)
    */
-  createShopItem(
-    categoryKey: ShopCategoryKey,
-    itemKey: ShopItemKey,
-    item: ShopItem,
-  ): void;
+  createShopItem(categoryKey: ShopCategoryKey, itemKey: ShopItemKey, item: ShopItem): void;
   /**
    * Update selected properties of an existing shop item.
    * For example, { canBuy: true } to allow players to purchase the item.
@@ -373,10 +364,7 @@ interface GameApi {
    * @param categoryKey - The key of the category to configure
    * @param config - Category configuration properties
    */
-  configureShopCategory(
-    categoryKey: ShopCategoryKey,
-    config: ShopCategoryConfig,
-  ): void;
+  configureShopCategory(categoryKey: ShopCategoryKey, config: ShopCategoryConfig): void;
   /**
    * Create a new shop item for a specific player.
    * Will create a new category if it does not exist.
@@ -442,10 +430,7 @@ interface GameApi {
    * @param playerId
    * @param optionsObj An object which contains key value pairs of new settings. E.g {canChange: true, speedMultiplier: false}
    */
-  setClientOptions(
-    playerId: PlayerId,
-    optionsObj: Partial<ClientOptions>,
-  ): void;
+  setClientOptions(playerId: PlayerId, optionsObj: Partial<ClientOptions>): void;
   /**
    * Sets a client option to its default value. This will be the value stored in your game's defaultClientOptions, otherwise Bloxd's default.
    *
@@ -630,12 +615,7 @@ interface GameApi {
    * @param z
    * @param blockName
    */
-  setBlock(
-    x: number | number[],
-    y: number | BlockName,
-    z?: number,
-    blockName?: BlockName,
-  ): void;
+  setBlock(x: number | number[], y: number | BlockName, z?: number, blockName?: BlockName): void;
   /**
    * Initiate a block change "by the world".
    * This ends up calling the onWorldChangeBlock and only makes the change if not prevented by game/plugins.
@@ -741,10 +721,7 @@ interface GameApi {
    * Defaults false. If true and name is invalid, returns null.
    * @returns
    */
-  blockNameToBlockId(
-    blockName: BlockName,
-    allowInvalidBlock?: boolean,
-  ): PNull<number>;
+  blockNameToBlockId(blockName: BlockName, allowInvalidBlock?: boolean): PNull<number>;
   /**
    * Goes from block id to block name. The reverse of blockNameToBlockId
    *
@@ -910,9 +887,7 @@ interface GameApi {
    *
    * @param itemName
    */
-  getInitialItemMetadata(
-    itemName: string,
-  ): Partial<BlockMetadataItem & NonBlockMetadataItem>;
+  getInitialItemMetadata(itemName: string): Partial<BlockMetadataItem & NonBlockMetadataItem>;
   /**
    * Get stat info about a block or item
    * Either based on a client option for a player: (e.g. \`DirtTtb\`)
@@ -960,11 +935,7 @@ interface GameApi {
    * @param intensity Shake "power" (0..1); the client clamps the accumulated power to 1.
    * @param durationMs How long the shake lasts, in milliseconds.
    */
-  shakePlayerCamera(
-    playerId: PlayerId,
-    intensity: number,
-    durationMs?: number,
-  ): void;
+  shakePlayerCamera(playerId: PlayerId, intensity: number, durationMs?: number): void;
   /**
    * Set a player's opacity
    * A simple helper that calls setTargetedPlayerSettingForEveryone
@@ -1029,12 +1000,7 @@ interface GameApi {
    * @param y
    * @param z
    */
-  resetCanChangeBlock(
-    playerId: PlayerId,
-    x: number,
-    y: number,
-    z: number,
-  ): void;
+  resetCanChangeBlock(playerId: PlayerId, x: number, y: number, z: number): void;
   /**
    * Lets a player Change a block type. Valid names are any block name, including 'Air'
    * Less priority than cant change block pos/can change block rect
@@ -1068,11 +1034,7 @@ interface GameApi {
    * @param pos1 Arg as [x, y, z]
    * @param pos2 Arg as [x, y, z]
    */
-  setCanChangeBlockRect(
-    playerId: PlayerId,
-    pos1: number[],
-    pos2: number[],
-  ): void;
+  setCanChangeBlockRect(playerId: PlayerId, pos1: number[], pos2: number[]): void;
   /**
    * Make it so a player cant Change blocks within two points. Coordinates are inclusive. E.g. if [0, 0, 0] is pos1
    * and [1, 1, 1] is pos2 then the 8 blocks contained within pos1 and pos2 won't be able to be broken.
@@ -1083,11 +1045,7 @@ interface GameApi {
    * @param pos1 Arg as [x, y, z]
    * @param pos2 Arg as [x, y, z]
    */
-  setCantChangeBlockRect(
-    playerId: PlayerId,
-    pos1: number[],
-    pos2: number[],
-  ): void;
+  setCantChangeBlockRect(playerId: PlayerId, pos1: number[], pos2: number[]): void;
   /**
    * Remove any previous can/cant change block rect settings for a player
    *
@@ -1095,11 +1053,7 @@ interface GameApi {
    * @param pos1
    * @param pos2
    */
-  resetCanChangeBlockRect(
-    playerId: PlayerId,
-    pos1: number[],
-    pos2: number[],
-  ): void;
+  resetCanChangeBlockRect(playerId: PlayerId, pos1: number[], pos2: number[]): void;
   /**
    * Allow a player to walk through a type of block. For blocks that are normally solid and not seethrough, the player will experience slight visual glitches while inside the block.
    *
@@ -1108,11 +1062,7 @@ interface GameApi {
    * @param blockName
    * @param disable If you've enabled a player to walk through a block and want to make the block solid for them again, pass this with true. Otherwise you only need to pass playerId and blockName
    */
-  setWalkThroughType(
-    playerId: PlayerId,
-    blockName: BlockName,
-    disable?: boolean,
-  ): void;
+  setWalkThroughType(playerId: PlayerId, blockName: BlockName, disable?: boolean): void;
   /**
    * Allow a player to walk through (or not walk through) voxels that are located within a given rectangle.
    * For blocks that are normally solid and not seethrough, the player will experience slight visual glitches while inside the block.
@@ -1286,9 +1236,7 @@ interface GameApi {
    *
    * @param playerId
    */
-  getCraftingRecipesForPlayer(
-    playerId: PlayerId,
-  ): Record<string, RecipesForItem>;
+  getCraftingRecipesForPlayer(playerId: PlayerId): Record<string, RecipesForItem>;
   /**
    * Give a standard chest an item and a certain amount of that item.
    * Returns the amount of item added to the chest.
@@ -1448,11 +1396,7 @@ interface GameApi {
    * @param toDuration The time it takes for the bar to reach the given toFraction in ms.
    * If this is too low and you queue multiple updates, this toFraction could be skipped. Treat 200ms as a minimum.
    */
-  progressBarUpdate(
-    playerId: PlayerId,
-    toFraction: number,
-    toDuration?: number,
-  ): void;
+  progressBarUpdate(playerId: PlayerId, toFraction: number, toDuration?: number): void;
   /**
    * This will initiate the MiddleScreenBar, starting at empty and filling up to full over the given duration.
    * Good to represent cooldowns (eg gun reload) or charged items (eg crossbow)
@@ -1484,11 +1428,7 @@ interface GameApi {
    *   at the projected screen position of that direction rather than at the centre of the screen.
    *   Same flow as mobile melee attacks where the tap point differs from screen centre.
    */
-  sendHitmarker(
-    playerId: PlayerId,
-    isCrit?: boolean,
-    directionVector?: PNull<number[]>,
-  ): void;
+  sendHitmarker(playerId: PlayerId, isCrit?: boolean, directionVector?: PNull<number[]>): void;
   /**
    * Show a directional arrow indicator on the player's screen pointing toward a world position.
    * When the position is off-screen the indicator is a rotating chevron at the screen edge.
@@ -1625,10 +1565,7 @@ interface GameApi {
    * @param mobType
    * @param setting
    */
-  getDefaultMobSetting<
-    TMobType extends MobType,
-    TMobSetting extends MobSetting,
-  >(
+  getDefaultMobSetting<TMobType extends MobType, TMobSetting extends MobSetting>(
     mobType: TMobType,
     setting: TMobSetting,
   ): MobSettings<TMobType>[TMobSetting];
@@ -1638,10 +1575,7 @@ interface GameApi {
    * @param setting
    * @param value
    */
-  setDefaultMobSetting<
-    TMobType extends MobType,
-    TMobSetting extends MobSetting,
-  >(
+  setDefaultMobSetting<TMobType extends MobType, TMobSetting extends MobSetting>(
     mobType: TMobType,
     setting: TMobSetting,
     value: MobSettings<TMobType>[TMobSetting],
@@ -1786,12 +1720,7 @@ interface GameApi {
    * @param yImpulse
    * @param zImpulse
    */
-  applyImpulse(
-    eId: EntityId,
-    xImpulse: number,
-    yImpulse: number,
-    zImpulse: number,
-  ): void;
+  applyImpulse(eId: EntityId, xImpulse: number, yImpulse: number, zImpulse: number): void;
   /**
    * Get the velocity of an entity
    * Will return [0, 0, 0] if the entity doesn't have a physics body
@@ -1962,11 +1891,7 @@ interface GameApi {
    * @param name
    * @param atOrAboveLevel Checks whether the effect is at or above the given level
    */
-  hasEffect(
-    lifeformId: LifeformId,
-    name: string,
-    atOrAboveLevel?: number,
-  ): boolean;
+  hasEffect(lifeformId: LifeformId, name: string, atOrAboveLevel?: number): boolean;
   /**
    * Get the level of an effect on a lifeform, or 0 if they don't have it.
    *
@@ -2009,10 +1934,7 @@ interface GameApi {
    * @param playerId
    * @param cosmeticType Type of cosmetic
    */
-  getPlayerCosmetic(
-    playerId: PlayerId,
-    cosmeticType: CosmeticType,
-  ): CosmeticName;
+  getPlayerCosmetic(playerId: PlayerId, cosmeticType: CosmeticType): CosmeticName;
   /**
    * Scale node of a player's mesh by 3d vector.
    * State from prior calls to this api is lost so if you want to have multiple nodes scaled, pass in all the scales at once.
@@ -2020,10 +1942,7 @@ interface GameApi {
    * @param playerId
    * @param nodeScales
    */
-  scalePlayerMeshNodes(
-    playerId: PlayerId,
-    nodeScales: EntityMeshScalingMap,
-  ): void;
+  scalePlayerMeshNodes(playerId: PlayerId, nodeScales: EntityMeshScalingMap): void;
   /**
    *  Attach/detach mesh instances to/from an entity
    *  @param eId
@@ -2085,10 +2004,7 @@ interface GameApi {
    * @param playerId
    * @param entityEId
    */
-  removeFollowingEntityFromPlayer(
-    playerId: PlayerId,
-    entityEId: EntityId,
-  ): void;
+  removeFollowingEntityFromPlayer(playerId: PlayerId, entityEId: EntityId): void;
   /**
    * Set camera zoom for a player
    * @param playerId
@@ -2280,11 +2196,7 @@ interface GameApi {
    * @param key
    * @param value
    */
-  setPlayerDbValue(
-    playerId: PlayerId,
-    key: string,
-    value: string | number,
-  ): void;
+  setPlayerDbValue(playerId: PlayerId, key: string, value: string | number): void;
   /**
    * Deletes a database value that is saved per player.
    * @param playerId
@@ -2310,11 +2222,7 @@ interface GameApi {
    * @param currencyId
    * @param info
    */
-  setCurrency(
-    playerId: PlayerId,
-    currencyId: string,
-    info: UgcCurrencyInfo,
-  ): void;
+  setCurrency(playerId: PlayerId, currencyId: string, info: UgcCurrencyInfo): void;
   /**
    * Delete a currency from a player. This will make the currency unknown to the player.
    * @param playerId
@@ -2340,11 +2248,7 @@ interface GameApi {
    * @param currencyId
    * @param amount
    */
-  giveCurrencyAmount(
-    playerId: PlayerId,
-    currencyId: string,
-    amount: number,
-  ): void;
+  giveCurrencyAmount(playerId: PlayerId, currencyId: string, amount: number): void;
   /**
    * Set a default value to be returned by your callback code if it throws an error.
    *
@@ -2501,10 +2405,7 @@ interface GameApi {
    * @param requestText The text of the request.
    * @returns The ID of the request, or null if the request was rate limited. Pass into deleteUiRequest or cross-reference with onUiRequestResponded.
    */
-  addUiRequestPopup(
-    playerId: PlayerId,
-    requestText: string,
-  ): PNull<UiRequestId>;
+  addUiRequestPopup(playerId: PlayerId, requestText: string): PNull<UiRequestId>;
   /**
    * Log a message to chat.
    */
@@ -2724,10 +2625,7 @@ type EntityMeshScalingMap = {
 };
 type EntityNamedNode = PlayerMeshNamedNode;
 type PlayerMeshNamedNode = _TypeOf["playerMeshNamedNodes"][number];
-type LobbyLeaderboardValues = Record<
-  string,
-  string | number | CustomTextStyling
->;
+type LobbyLeaderboardValues = Record<string, string | number | CustomTextStyling>;
 type ChatTags = CustomTextStyling[];
 type NameTagInfo = {
   backgroundColor?: string;
@@ -2874,16 +2772,12 @@ type BlockbenchAnimationFrameSchema =
       post: Point; // When lerping away from a point, we lerp away from its post.
     }>;
 type BlockbenchLerpModeSchema = "linear" | "catmullrom";
-type NodeSkeletonAnimationSchema = Readonly<
-  Record<NodeName, NodeAnimationSchema>
->;
+type NodeSkeletonAnimationSchema = Readonly<Record<NodeName, NodeAnimationSchema>>;
 type NodeName = string;
 type NodeAnimationSchema = Readonly<{
   timeline: AnimationTimelineSchema;
 }>;
-type BlockbenchBonesAnimationSchema = Readonly<
-  Record<NodeName, BlockbenchBoneAnimationSchema>
->;
+type BlockbenchBonesAnimationSchema = Readonly<Record<NodeName, BlockbenchBoneAnimationSchema>>;
 type BlockbenchBoneAnimationSchema = Readonly<{
   rotation?: BlockbenchAnimationTimelineSchema; // Blockbench rotations are in degrees.
   position?: BlockbenchAnimationTimelineSchema; // Blockbench position offsets in mesh-local units; rest pose is (0, 0, 0).
@@ -2963,15 +2857,7 @@ type RecursiveReadonly<T> = T extends Primitive
         : { readonly [K in keyof T]: RecursiveReadonly<T[K]> } // Tuple
       : Readonly<{ [K in keyof T]: RecursiveReadonly<T[K]> }>;
 type Primitive = string | number | boolean | bigint | symbol | undefined | null;
-type SoundType =
-  | "stone"
-  | "wood"
-  | "gravel"
-  | "grass"
-  | "glass"
-  | "sand"
-  | "snow"
-  | "cloth";
+type SoundType = "stone" | "wood" | "gravel" | "grass" | "glass" | "sand" | "snow" | "cloth";
 type GunStatsOverride = Partial<Omit<GunMetadata, NonOverridableStats>>;
 type GunMetadata = {
   gunType: GunCategory; // Used for sounds
@@ -3054,12 +2940,7 @@ type RecipesForItem = RecursiveReadonly<
   }[]
 >;
 type EntityType = PNull<NetworkedEntityType | "Mesh" | "Item">;
-type NetworkedEntityType =
-  | LifeformType
-  | ThrowableItem
-  | string
-  | string
-  | "AudioEntity";
+type NetworkedEntityType = LifeformType | ThrowableItem | string | string | "AudioEntity";
 type LifeformType = _TypeOf["lifeformTypes"][number];
 type ThrowableItem = string;
 type MeshEntityType = keyof MeshEntityOpts;
@@ -3122,8 +3003,7 @@ type MobSpawnOpts<TMobType extends MobType> = Partial<{
     collidesEntities: boolean;
   }>;
 }>;
-type MobVariation<TMobType extends MobType> =
-  _TypeOf["mobVariations"][TMobType][number];
+type MobVariation<TMobType extends MobType> = _TypeOf["mobVariations"][TMobType][number];
 type MobSetting = _TypeOf["mobSettings"][number];
 type MobSettings<TMobType extends MobType> = {
   variation: MobVariation<TMobType>;
@@ -3314,26 +3194,19 @@ type TempMobParticleOpts = Readonly<{
   duration: number;
 }> &
   MobParticleOpts;
-type MobParticleOpts = Readonly<
-  Pick<MeshParticleSystemOpts, "texture" | "colorGradients">
->;
+type MobParticleOpts = Readonly<Pick<MeshParticleSystemOpts, "texture" | "colorGradients">>;
 type ItemNameWithEffects = {
   itemName: ItemName;
   effects: readonly Readonly<EffectOpts>[];
   healAmt?: number;
 };
-type LevelUpBonuses = RecursiveReadonly<
-  Record<MobFeedLevelUpLevels, MobLevelUpBonus>
->;
+type LevelUpBonuses = RecursiveReadonly<Record<MobFeedLevelUpLevels, MobLevelUpBonus>>;
 type EffectOpts = { name: PotionEffect; duration: number; level: number };
 type PotionEffect = _TypeOf["potionEffects"][number];
 type MobFeedLevelUpLevels = Exclude<MobFeedLevel, 0>;
 type MobLevelUpBonus = _TypeOf["mobLevelUpBonuses"][number];
 type MobFeedLevel = InclusiveRange<_TypeOf["MAX_MOB_FEED_LEVEL"]>;
-type InclusiveRange<
-  N extends number,
-  Arr extends number[] = [],
-> = Arr["length"] extends N
+type InclusiveRange<N extends number, Arr extends number[] = []> = Arr["length"] extends N
   ? Arr[number] | Arr["length"]
   : InclusiveRange<N, [...Arr, Arr["length"]]>;
 type Bounds = Readonly<MutableBounds>;
@@ -3528,9 +3401,7 @@ type PlayerPhysicsState<TPhysicsType extends PhysicsType> = Readonly<{
   type: TPhysicsType;
   tier: PhysicsTier<TPhysicsType>;
 }>;
-type PhysicsTier<TPhysicsType extends PhysicsType> = PNull<
-  PhysicsTiers[TPhysicsType]
->;
+type PhysicsTier<TPhysicsType extends PhysicsType> = PNull<PhysicsTiers[TPhysicsType]>;
 type PhysicsTiers = {
   [PhysicsType.DEFAULT]: null;
   [PhysicsType.BOAT]: BoatTier;
@@ -3551,10 +3422,7 @@ type BlockRaycastResult = PNull<{
   normal: Pos; // The normal of the face that was hit
   adjacent: Pos; // The position of the block adjacent to the hit face
 }>;
-type MeshParticleSystemUpdates = Record<
-  EntityId,
-  Record<NodeName, MeshParticleSystemUpdate>
->;
+type MeshParticleSystemUpdates = Record<EntityId, Record<NodeName, MeshParticleSystemUpdate>>;
 type MeshParticleSystemUpdate = {
   particleSystemDir1?: number[];
   particleSystemDir2?: number[];
@@ -3659,24 +3527,14 @@ type MultiBlockInfo = {
   positions: { block: string; id: number; x: number; y: number; z: number }[];
 };
 type MeshEntityVehicleType = _TypeOf["meshEntityVehiclesTypes"][number];
-type BoughtShopItem = Omit<
-  ShopItem,
-  "boughtCallback" | "schematicId" | "isRewardedAd"
->;
+type BoughtShopItem = Omit<ShopItem, "boughtCallback" | "schematicId" | "isRewardedAd">;
 type OnPlayerChatObjectResponse = Record<PlayerId, false | ChatMessageObject>;
 type ChatMessageObject = {
   prefixContent?: ChatTags;
   chatContent?: CustomTextStyling;
 };
 interface _TypeOf {
-  lifeformBodyParts: readonly [
-    "Torso",
-    "Head",
-    "ArmRight",
-    "ArmLeft",
-    "LegLeft",
-    "LegRight",
-  ];
+  lifeformBodyParts: readonly ["Torso", "Head", "ArmRight", "ArmLeft", "LegLeft", "LegRight"];
   enchantmentPerks: readonly [
     "Damage",
     "Attack Speed",
@@ -4082,13 +3940,7 @@ interface _TypeOf {
     readonly mobSpawnOrb: unknown;
     readonly aura: unknown;
   };
-  gunCategories: readonly [
-    "semi_automatic",
-    "submachine",
-    "rifle",
-    "pistol",
-    "shotgun",
-  ];
+  gunCategories: readonly ["semi_automatic", "submachine", "rifle", "pistol", "shotgun"];
   customItemStats: readonly [
     "ttb",
     "displayName",
@@ -4211,11 +4063,7 @@ interface _TypeOf {
     ];
     readonly "Draugr Skeleton": readonly ["default"];
     readonly "Frost Golem": readonly ["default"];
-    readonly "Frost Zombie": readonly [
-      "default",
-      "longHairChestplate",
-      "shortHairClothed",
-    ];
+    readonly "Frost Zombie": readonly ["default", "longHairChestplate", "shortHairClothed"];
     readonly "Frost Skeleton": readonly ["default"];
     readonly "Draugr Knight": readonly ["default"];
     readonly Wolf: readonly ["default", "white", "brown", "grey", "spectral"];
@@ -4365,13 +4213,7 @@ interface _TypeOf {
     "runningRandomFacingInfo",
     "metaInfo",
   ];
-  armourPieces: readonly [
-    "Helmet",
-    "Chestplate",
-    "Gauntlets",
-    "Leggings",
-    "Boots",
-  ];
+  armourPieces: readonly ["Helmet", "Chestplate", "Gauntlets", "Leggings", "Boots"];
   potionEffects: readonly [
     "Speed",
     "Damage Reduction",
@@ -4664,14 +4506,7 @@ interface _TypeOf {
   };
   NonBlockMetadataItem: {
     displayName?: string | TranslatedText | CustomTextStyling;
-    type:
-      | "Item"
-      | "Tool"
-      | "Gun"
-      | "FullAuto"
-      | "Armour"
-      | "GrayscaleArmour"
-      | "Chargeable";
+    type: "Item" | "Tool" | "Gun" | "FullAuto" | "Armour" | "GrayscaleArmour" | "Chargeable";
     textureInfo: string | string[] | [number, number, number, number?];
     weight: number;
     heldItemScale: number;
@@ -4832,23 +4667,7 @@ type LobbyType = 0 | 1 | 2;
 type PhysicsType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 type BoatTier = 0 | 1 | 2;
 type GliderTier = 0 | 1 | 2 | 3;
-type BalloonTier =
-  | 0
-  | 1
-  | 2
-  | 3
-  | 4
-  | 5
-  | 6
-  | 7
-  | 8
-  | 9
-  | 10
-  | 11
-  | 12
-  | 13
-  | 14
-  | 15;
+type BalloonTier = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
 type SleepingTier = 0 | 1 | 2 | 3;
 type CarTier = 0 | 1 | 2;
 type ExplosionType = 0 | 1 | 2;
@@ -5105,10 +4924,7 @@ declare var onPlayerJoin: (playerId: string, fromGameReset: boolean) => void;
  * @param playerId - The id of the player that left
  * @param serverIsShuttingDown - Whether the server is shutting down
  */
-declare var onPlayerLeave: (
-  playerId: string,
-  serverIsShuttingDown: boolean,
-) => void;
+declare var onPlayerLeave: (playerId: string, serverIsShuttingDown: boolean) => void;
 
 /**
  * Called when a player jumps
@@ -5209,10 +5025,7 @@ declare var onPlayerPickedUpItem: (
  * @param playerId - The id of the player that selected the inventory slot
  * @param slotIndex - The index of the inventory slot that was selected
  */
-declare var onPlayerSelectInventorySlot: (
-  playerId: PlayerId,
-  slotIndex: number,
-) => void;
+declare var onPlayerSelectInventorySlot: (playerId: PlayerId, slotIndex: number) => void;
 
 /**
  * Called when a player stands on a block
@@ -5448,11 +5261,7 @@ declare var onPlayerClickUp: (
  * @param option - The option that was updated
  * @param value - The new value of the option, always null for custom code
  */
-declare var onClientOptionUpdated: (
-  playerId: PlayerId,
-  option: ClientOption,
-  value: any,
-) => void;
+declare var onClientOptionUpdated: (playerId: PlayerId, option: ClientOption, value: any) => void;
 
 /**
  * Called when a mob setting is updated
@@ -5460,11 +5269,7 @@ declare var onClientOptionUpdated: (
  * @param setting - The setting that was updated
  * @param value - The new value of the setting
  */
-declare var onMobSettingUpdated: (
-  mobId: MobId,
-  setting: MobSetting,
-  value: any,
-) => void;
+declare var onMobSettingUpdated: (mobId: MobId, setting: MobSetting, value: any) => void;
 
 /**
  * Called when a player's inventory is updated
@@ -5779,10 +5584,7 @@ declare var onPlayerDamagingMeshEntity: (
  * @param playerId - The id of the player breaking the mesh entity
  * @param entityId - The id of the mesh entity being broken
  */
-declare var onPlayerBreakMeshEntity: (
-  playerId: PlayerId,
-  entityId: EntityId,
-) => void;
+declare var onPlayerBreakMeshEntity: (playerId: PlayerId, entityId: EntityId) => void;
 
 /**
  * Called when a player uses a throwable item
@@ -5809,10 +5611,7 @@ declare var onPlayerThrowableHitTerrain: (
  * @param playerId - The id of the player pressing the touchscreen action button
  * @param touchDown - Whether the touchscreen action button was pressed or released
  */
-declare var onTouchscreenActionButton: (
-  playerId: PlayerId,
-  touchDown: boolean,
-) => void;
+declare var onTouchscreenActionButton: (playerId: PlayerId, touchDown: boolean) => void;
 
 /**
  * Called when a player claims a task
@@ -5888,21 +5687,14 @@ declare var onPlayerFinishChargingItem: (
   duration: number,
 ) => void;
 
-declare var onPlayerFinishQTE: (
-  playerId: PlayerId,
-  qteId: QTERequestId,
-  result: boolean,
-) => void;
+declare var onPlayerFinishQTE: (playerId: PlayerId, qteId: QTERequestId, result: boolean) => void;
 
 /**
  * Called when a player opens or closes the shop menu
  * @param playerId - The id of the player whose shop menu changed
  * @param isOpen - Whether the shop menu is now open
  */
-declare var onPlayerToggledShopMenu: (
-  playerId: PlayerId,
-  isOpen: boolean,
-) => void;
+declare var onPlayerToggledShopMenu: (playerId: PlayerId, isOpen: boolean) => void;
 
 /** Called after a player plays an emote from the emote wheel. */
 declare var onPlayerPlayedEmote: (playerId: PlayerId, emoteId: string) => void;
@@ -5954,11 +5746,7 @@ declare var onPlayerBoughtShopItem: (
  * @param id - The id of the UI request.
  * @param response - The response to the UI request.
  */
-declare var onUiRequestResponded: (
-  playerId: PlayerId,
-  id: UiRequestId,
-  response: boolean,
-) => void;
+declare var onUiRequestResponded: (playerId: PlayerId, id: UiRequestId, response: boolean) => void;
 
 /**
  * Called every so often.

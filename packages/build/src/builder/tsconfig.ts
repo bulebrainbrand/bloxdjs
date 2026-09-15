@@ -15,20 +15,12 @@ export const getTsconfig = (): {
   options?: ts.CompilerOptions;
   path?: string;
 } => {
-  const configPath = ts.findConfigFile(
-    "./",
-    ts.sys.fileExists,
-    "tsconfig.json",
-  );
+  const configPath = ts.findConfigFile("./", ts.sys.fileExists, "tsconfig.json");
   if (!configPath) {
     return {};
   }
 
-  const parsed = ts.getParsedCommandLineOfConfigFile(
-    configPath,
-    {},
-    parseConfigHost,
-  );
+  const parsed = ts.getParsedCommandLineOfConfigFile(configPath, {}, parseConfigHost);
 
   if (!parsed) {
     return { path: configPath };

@@ -1,9 +1,6 @@
 import avsc from "avsc";
 import type { SchemaObjectBlockdata } from "./types";
-import type {
-  ShortestNormailzedSchema,
-  ShortestSchemaObject,
-} from "./shortest";
+import type { ShortestNormailzedSchema, ShortestSchemaObject } from "./shortest";
 import type { BlockData, Schema } from "./types";
 import { decodeChunks, encodeChunks } from "../blockencode";
 const middleAvroSchema = avsc.Type.forSchema({

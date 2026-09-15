@@ -19,16 +19,8 @@ import generate from "@babel/generator";
 import { pack } from "./packer";
 import { getEachFileInfo } from "./getFileInfo";
 import path from "node:path";
-export const build = async (
-  config: StrictConfig,
-  fs: FullFsClient,
-  cwd: string,
-) => {
-  const includeFiles = await getIncludesFiles(
-    config.includes,
-    config.excludes,
-    fs,
-  );
+export const build = async (config: StrictConfig, fs: FullFsClient, cwd: string) => {
+  const includeFiles = await getIncludesFiles(config.includes, config.excludes, fs);
   console.log(`[x] resolved imnclude files: ${includeFiles.length} file`);
   const paths = copyToTempDirectory(includeFiles, cwd, fs);
   console.log(`[x] created temp dir`);
@@ -52,8 +44,7 @@ export const build = async (
    */
   const astMap = new Map(zip(paths, asts));
   console.log(`[x] created ast map`);
-  if (config.debug)
-    console.log(`astmap keys: ${Array.from(astMap.keys()).join("\n")}`);
+  if (config.debug) console.log(`astmap keys: ${Array.from(astMap.keys()).join("\n")}`);
   const tempTsconfigPath = tsconfig.path
     ? convertPathToInnerTempDirectory(tsconfig.path, cwd)
     : undefined;
@@ -73,9 +64,7 @@ export const build = async (
         ),
       ).join("\n")}`,
     );
-    console.log(
-      `ImporterFilesToReplace ${Array.from(ImporterFilesToReplace.keys()).join("\n")}`,
-    );
+    console.log(`ImporterFilesToReplace ${Array.from(ImporterFilesToReplace.keys()).join("\n")}`);
   }
   const fileNameMap = generateFileNameMap(ExporterFilesToReplace);
   for (const [path, ast] of astMap) {
@@ -86,14 +75,7 @@ export const build = async (
         console.log(
           `replace export members: ${ExportMemberToReplace.type === "part" ? Array.from(ExportMemberToReplace.member).join("\n") : "all"}`,
         );
-      addGlobalThisExport(
-        ast,
-        path,
-        fileNameMap,
-        ExportMemberToReplace,
-        fs,
-        tempTsconfigPath,
-      );
+      addGlobalThisExport(ast, path, fileNameMap, ExportMemberToReplace, fs, tempTsconfigPath);
       console.log(
         `[x] converted ${ExportMemberToReplace.type === "all" ? "all" : ExportMemberToReplace.member.size} export`,
       );
@@ -110,8 +92,7 @@ export const build = async (
     filesInfo
       .entries()
       .filter(
-        (arg): arg is [string, { type: "codeblock"; name: string }] =>
-          arg[1].type === "codeblock",
+        (arg): arg is [string, { type: "codeblock"; name: string }] => arg[1].type === "codeblock",
       )
       .map(([path, info]) => [path, info.name]),
   );
@@ -120,12 +101,7 @@ export const build = async (
       `entryCodeBlockFileToNameMap: \n${Array.from(entryCodeBlockFileToNameMap.entries().map(([file, type]) => `${file}: ${type}`)).join("\n")}`,
     );
 
-  await pack(
-    entryCodeBlockFileToNameMap,
-    worldcodeEntry,
-    config.minify.enable,
-    tempTsconfigPath,
-  );
+  await pack(entryCodeBlockFileToNameMap, worldcodeEntry, config.minify.enable, tempTsconfigPath);
   console.log(`[x] packed files`);
   if (!config.debug) {
     fs.rmSync(getTempDirectory(cwd), { recursive: true, force: true });

@@ -14,12 +14,7 @@ describe("resolveImportPath test", () => {
   });
   it("if no config,return as is", () => {
     expect(
-      resolveImportPath(
-        { compilerOptions: {} },
-        "./tsconfig.json",
-        "./src/index.ts",
-        "./foo.ts",
-      ),
+      resolveImportPath({ compilerOptions: {} }, "./tsconfig.json", "./src/index.ts", "./foo.ts"),
     ).toBe("./foo.ts");
   });
   it("if match path,return resolved", () => {

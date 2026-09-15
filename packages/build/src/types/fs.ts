@@ -18,8 +18,5 @@ export type ReadonlyFsClient = Pick<
   | "readFile"
   | "readFileSync"
 > & {
-  promises: Pick<
-    FullFsClient["promises"],
-    "realpath" | "readdir" | "lstat" | "readFile"
-  >;
+  promises: Pick<FullFsClient["promises"], "realpath" | "readdir" | "lstat" | "readFile">;
 };

@@ -8,11 +8,8 @@ import { TEMP_DIR } from "./constants";
  * @param fs
  * @returns absolutedPath[] - inner temp path
  */
-export const copyToTempDirectory = (
-  filePaths: string[],
-  cwd: string,
-  fs: FullFsClient,
-) => filePaths.map((path) => copyFileToTempDirectory(path, fs, cwd));
+export const copyToTempDirectory = (filePaths: string[], cwd: string, fs: FullFsClient) =>
+  filePaths.map((path) => copyFileToTempDirectory(path, fs, cwd));
 
 /**
  *
@@ -20,10 +17,7 @@ export const copyToTempDirectory = (
  * @param cwd - absoluted path
  * @returns - absoluted path which is in temp
  */
-export const convertPathToInnerTempDirectory = (
-  filePath: string,
-  cwd: string,
-) => {
+export const convertPathToInnerTempDirectory = (filePath: string, cwd: string) => {
   const relativePath = path.relative(cwd, path.resolve(cwd, filePath));
   const innerTempPath = path.join(path.join(cwd, TEMP_DIR), relativePath);
   return innerTempPath.replaceAll("\\", "/");
@@ -38,11 +32,7 @@ export const getTempDirectory = (cwd: string) => {
   return innerTempPath.replaceAll("\\", "/");
 };
 
-export const copyFileToTempDirectory = (
-  file: string,
-  fs: FullFsClient,
-  cwd: string,
-): string => {
+export const copyFileToTempDirectory = (file: string, fs: FullFsClient, cwd: string): string => {
   const innetTempPath = convertPathToInnerTempDirectory(file, cwd);
   fs.mkdirSync(path.dirname(innetTempPath), { recursive: true });
   fs.copyFileSync(file, innetTempPath);

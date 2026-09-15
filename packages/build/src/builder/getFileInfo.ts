@@ -47,19 +47,14 @@ export const getFileInfo = (ast: t.File): Result<FileInfo, FileInfoError> => {
   // use codeblock{}
   //              ^index=13
   const USE_CODEBLOCK_NAME_START_INDEX = 14;
-  const codeblockName = text.slice(
-    USE_CODEBLOCK_NAME_START_INDEX,
-    text.length - 1,
-  );
+  const codeblockName = text.slice(USE_CODEBLOCK_NAME_START_INDEX, text.length - 1);
   if (codeblockName === "") {
     return err("non_name_codeblock");
   }
   return ok({ type: "codeblock", name: codeblockName });
 };
 
-export const getEachFileInfo = (
-  astMap: Map<string, t.File>,
-): Map<string, FileInfo> => {
+export const getEachFileInfo = (astMap: Map<string, t.File>): Map<string, FileInfo> => {
   const map: Map<string, FileInfo> = new Map();
   for (const [path, ast] of astMap) {
     map.set(path, unwrap(getFileInfo(ast)));

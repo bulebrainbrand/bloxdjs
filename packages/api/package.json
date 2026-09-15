@@ -2,15 +2,15 @@
   "name": "@bloxdjs/api",
   "version": "0.0.7",
   "private": false,
-  "type": "module",
-  "files": [
-    "dist/",
-    "src/"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/bulebrainbrand/bloxdjs/tree/main/packages/api"
   },
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -21,13 +21,13 @@
       "default": "./src/empty.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "node covert.js src/index.ts dist/index.d.ts",
     "dev": "pnpm exec vp test --watch",
     "test": "pnpm exec vp test --coverage",
     "prepublishOnly": "pnpm exec vp run build"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }
