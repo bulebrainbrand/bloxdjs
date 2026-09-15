@@ -56,10 +56,7 @@ export type ShortestNormailzedSchema = {
   chunks: Chunk[];
 };
 
-export const ShortestSchema: Schema<
-  ShortestSchemaObject,
-  ShortestNormailzedSchema
-> = {
+export const ShortestSchema: Schema<ShortestSchemaObject, ShortestNormailzedSchema> = {
   avroType: shortestAvroSchema,
   bufferToSchemaObject(buffer) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion

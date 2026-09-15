@@ -387,12 +387,7 @@ describe("generateGlobalThisAssignmentExpressionsFromDeclaration test", () => {
   it("if get invalid node,throw error", () => {
     expect(() =>
       generateGlobalThisAssignmentExpressionsFromDeclaration(
-        t.interfaceDeclaration(
-          t.identifier("a"),
-          null,
-          [],
-          t.objectTypeAnnotation([]),
-        ),
+        t.interfaceDeclaration(t.identifier("a"), null, [], t.objectTypeAnnotation([])),
         "a",
         { type: "part", member: new Set() },
       ),
@@ -422,9 +417,7 @@ describe("handleExportAll test", () => {
   });
 });
 
-function getExportNamedDeclarationPath(
-  code: string,
-): NodePath<t.ExportNamedDeclaration> {
+function getExportNamedDeclarationPath(code: string): NodePath<t.ExportNamedDeclaration> {
   const ast = parse(code, { sourceType: "module" });
   let result: NodePath<t.ExportNamedDeclaration> | undefined;
 
@@ -439,9 +432,7 @@ function getExportNamedDeclarationPath(
   return result;
 }
 
-function getExportAllDeclarationPath(
-  code: string,
-): NodePath<t.ExportAllDeclaration> {
+function getExportAllDeclarationPath(code: string): NodePath<t.ExportAllDeclaration> {
   const ast = parse(code, { sourceType: "module" });
   let result: NodePath<t.ExportAllDeclaration> | undefined;
 

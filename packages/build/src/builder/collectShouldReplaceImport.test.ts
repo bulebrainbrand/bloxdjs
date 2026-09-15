@@ -89,30 +89,25 @@ describe("test collectShouldReplaceExporter", () => {
     );
   });
   it("when already name-space import,return type:all", () => {
-    const ast = parse(
-      `import * as foo from "./foo.ts";import {bar} from "./foo.ts"`,
-      { sourceType: "module" },
-    );
+    const ast = parse(`import * as foo from "./foo.ts";import {bar} from "./foo.ts"`, {
+      sourceType: "module",
+    });
     expect(collectShouldReplaceExporter(ast)).toStrictEqual(
       new Map([["./foo.ts", { type: "all" }]]),
     );
   });
   it("when already import,return type:part and merging it", () => {
-    const ast = parse(
-      `import {foo} from "./foo.ts";import {bar} from "./foo.ts"`,
-      { sourceType: "module" },
-    );
+    const ast = parse(`import {foo} from "./foo.ts";import {bar} from "./foo.ts"`, {
+      sourceType: "module",
+    });
     expect(collectShouldReplaceExporter(ast)).toStrictEqual(
-      new Map([
-        ["./foo.ts", { type: "part", member: new Set(["foo", "bar"]) }],
-      ]),
+      new Map([["./foo.ts", { type: "part", member: new Set(["foo", "bar"]) }]]),
     );
   });
   it("when multi import,return multi import data", () => {
-    const ast = parse(
-      `import {foo} from "./foo.ts";import {bar} from "./bar.ts"`,
-      { sourceType: "module" },
-    );
+    const ast = parse(`import {foo} from "./foo.ts";import {bar} from "./bar.ts"`, {
+      sourceType: "module",
+    });
     expect(collectShouldReplaceExporter(ast)).toStrictEqual(
       new Map([
         ["./foo.ts", { type: "part", member: new Set(["foo"]) }],

@@ -17,8 +17,7 @@ export const collectShouldReplaceImportExports = (
   fs: FileSystem,
   tsconfigPath?: string,
 ) => {
-  const importedExporters: Map<string, ExportedMemberOfShouldReplace> =
-    new Map();
+  const importedExporters: Map<string, ExportedMemberOfShouldReplace> = new Map();
   const shouldReplaceImportFiles: Set<string> = new Set();
   for (const [filePath, ast] of astMap) {
     const info = getFileInfo(ast);
@@ -94,9 +93,7 @@ export const collectShouldReplaceExporter = (
 
 export const extractImportMember = (
   node: t.ImportDeclaration,
-):
-  | { type: "some"; path: string; member: Set<string> }
-  | { type: "all"; path: string } => {
+): { type: "some"; path: string; member: Set<string> } | { type: "all"; path: string } => {
   const exporter = node.source.value;
   const member = [];
 

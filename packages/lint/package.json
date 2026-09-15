@@ -1,11 +1,14 @@
 {
   "name": "@bloxdjs/lint",
-  "type": "module",
   "version": "0.1.2",
   "private": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/bulebrainbrand/bloxdjs/tree/main/packages/lint"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "pnpm exec vp pack",
@@ -16,8 +19,5 @@
   "dependencies": {
     "@typescript-eslint/rule-tester": "catalog:",
     "@typescript-eslint/utils": "catalog:"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

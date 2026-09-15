@@ -50,9 +50,7 @@ function convert(sourceText, options = {}) {
   // (declare let は対象外のまま)
   function isDeclareConstOrVarStatement(stmt) {
     if (!isVariableStatement(stmt)) return false;
-    const hasDeclare = !!stmt.modifiers?.some(
-      (m) => m.kind === SyntaxKind.DeclareKeyword,
-    );
+    const hasDeclare = !!stmt.modifiers?.some((m) => m.kind === SyntaxKind.DeclareKeyword);
     const flags = stmt.declarationList.flags;
     const isConst = (flags & NodeFlags.Const) !== 0;
     const isLet = (flags & NodeFlags.Let) !== 0;

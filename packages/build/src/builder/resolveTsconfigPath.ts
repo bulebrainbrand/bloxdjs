@@ -38,10 +38,7 @@ export function resolveImportPath(
         importString.endsWith(suffix) &&
         importString.length >= prefix.length + suffix.length
       ) {
-        matchedPart = importString.slice(
-          prefix.length,
-          importString.length - suffix.length,
-        );
+        matchedPart = importString.slice(prefix.length, importString.length - suffix.length);
       }
     } else if (importString === pattern) {
       matchedPart = "";
@@ -51,9 +48,7 @@ export function resolveImportPath(
     const target: string | undefined = targets[0];
     if (target === undefined) continue;
 
-    const resolvedTarget = hasWildcard
-      ? target.replace("*", matchedPart)
-      : target;
+    const resolvedTarget = hasWildcard ? target.replace("*", matchedPart) : target;
 
     resolvedAbsolutePath = path.resolve(baseUrlAbsolute, resolvedTarget);
     break;
@@ -99,9 +94,7 @@ export const resolveImportPathAst = (
 };
 
 const replaceImportPath = (
-  path: NodePath<
-    t.ExportAllDeclaration | t.ExportNamedDeclaration | t.ImportDeclaration
-  >,
+  path: NodePath<t.ExportAllDeclaration | t.ExportNamedDeclaration | t.ImportDeclaration>,
   tsconfig: TsConfig,
   tsconfigFilePath: string,
   targetFilePath: string,
@@ -109,12 +102,7 @@ const replaceImportPath = (
   const node = path.node;
   if (node.source == null) return;
   const importString = node.source.value;
-  const resolved = resolveImportPath(
-    tsconfig,
-    tsconfigFilePath,
-    targetFilePath,
-    importString,
-  );
+  const resolved = resolveImportPath(tsconfig, tsconfigFilePath, targetFilePath, importString);
   console.log(`replace path from ${importString} to ${resolved}`);
   node.source = t.stringLiteral(resolved);
 };

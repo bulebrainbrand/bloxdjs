@@ -30,23 +30,19 @@ export const replaceImport = (
         tsconfigPath,
       );
       const importData = generateImportData(path.node);
-      const normalImportVariableDeclarator =
-        generateVariableDeclaratorFromNormalImportDataArray(
-          importData.other,
-          moduleKey,
-        );
-      const namespaceImportVariableDeclarators =
-        generateVariableDeclaratorsFromNamespaceImport(
-          importData.namespace,
-          moduleKey,
-        );
+      const normalImportVariableDeclarator = generateVariableDeclaratorFromNormalImportDataArray(
+        importData.other,
+        moduleKey,
+      );
+      const namespaceImportVariableDeclarators = generateVariableDeclaratorsFromNamespaceImport(
+        importData.namespace,
+        moduleKey,
+      );
       const variableDeclaration = t.variableDeclaration(
         "const",
         normalImportVariableDeclarator == null
           ? namespaceImportVariableDeclarators
-          : namespaceImportVariableDeclarators.concat(
-              normalImportVariableDeclarator,
-            ),
+          : namespaceImportVariableDeclarators.concat(normalImportVariableDeclarator),
       );
       path.replaceWith(variableDeclaration);
     },
@@ -107,12 +103,7 @@ export const generateObjectProprtyComputed = (
   exportedName: string,
   importedName: string,
 ): t.ObjectPropertyComputed =>
-  t.objectProperty(
-    t.stringLiteral(exportedName),
-    t.identifier(importedName),
-    true,
-    false,
-  );
+  t.objectProperty(t.stringLiteral(exportedName), t.identifier(importedName), true, false);
 
 export const generateObjectProprtyNonComputed = (
   exportedName: string,
@@ -139,10 +130,7 @@ export const generateVariableDeclaratorFromNamespaceImport = (
   moduleKey: string,
 ) => {
   const nameIdentifier = t.identifier(importerName);
-  return t.variableDeclarator(
-    nameIdentifier,
-    generateGlobalThisModuleMemberExpression(moduleKey),
-  );
+  return t.variableDeclarator(nameIdentifier, generateGlobalThisModuleMemberExpression(moduleKey));
 };
 
 export const getModuleKeyFromImportDeclaration = (
@@ -153,10 +141,7 @@ export const getModuleKeyFromImportDeclaration = (
   tsconfigPath?: string,
 ): string => {
   const name = node.source.value;
-  const replacedName = nameMap.get(
-    resolvePathOrThrowError(name, fileName, fs, tsconfigPath),
-  );
-  if (replacedName == null)
-    throw new TypeError(`${name} mapped name is not found. this is bug.`);
+  const replacedName = nameMap.get(resolvePathOrThrowError(name, fileName, fs, tsconfigPath));
+  if (replacedName == null) throw new TypeError(`${name} mapped name is not found. this is bug.`);
   return replacedName;
 };

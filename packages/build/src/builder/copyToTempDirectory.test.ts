@@ -8,17 +8,14 @@ import { fs, vol } from "memfs";
 
 describe("convertPathToTemp test", () => {
   it("when path is relative,return inner temp path", () => {
-    expect(
-      convertPathToInnerTempDirectory("./src/index.ts", "/root/workspace"),
-    ).toBe("/root/workspace/.bloxd/src/index.ts");
+    expect(convertPathToInnerTempDirectory("./src/index.ts", "/root/workspace")).toBe(
+      "/root/workspace/.bloxd/src/index.ts",
+    );
   });
   it("when path is absoluted, return inner temp path", () => {
-    expect(
-      convertPathToInnerTempDirectory(
-        "/root/workspace/src/index.ts",
-        "/root/workspace",
-      ),
-    ).toBe("/root/workspace/.bloxd/src/index.ts");
+    expect(convertPathToInnerTempDirectory("/root/workspace/src/index.ts", "/root/workspace")).toBe(
+      "/root/workspace/.bloxd/src/index.ts",
+    );
   });
 });
 
@@ -38,9 +35,7 @@ describe("test copyFileToTempDirectory", () => {
     });
     // @ts-ignore
     copyFileToTempDirectory("src/index.ts", fs, ".");
-    expect(fs.readFileSync(".bloxd/src/index.ts").toString()).toBe(
-      "file_content",
-    );
+    expect(fs.readFileSync(".bloxd/src/index.ts").toString()).toBe("file_content");
   });
   it("copy file when absoluted path", () => {
     vol.fromJSON({
@@ -48,8 +43,6 @@ describe("test copyFileToTempDirectory", () => {
     });
     // @ts-ignore
     copyFileToTempDirectory("/src/index.ts", fs, "/");
-    expect(fs.readFileSync("/.bloxd/src/index.ts").toString()).toBe(
-      "file_content",
-    );
+    expect(fs.readFileSync("/.bloxd/src/index.ts").toString()).toBe("file_content");
   });
 });

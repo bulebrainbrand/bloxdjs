@@ -47,6 +47,4 @@ export default {
       },
     };
   },
-} as const satisfies RuleModule<
-  "notBuiltInPropertyAccess" | "nonDynamicAccess"
->;
+} as const satisfies RuleModule<"notBuiltInPropertyAccess" | "nonDynamicAccess">;

@@ -5,10 +5,7 @@ export const parseFile = (code: string): t.File => {
   return parse(code, { sourceType: "module" });
 };
 
-export const parseFileFromPath = (
-  path: string,
-  fs: ReadonlyFsClient,
-): t.File => {
+export const parseFileFromPath = (path: string, fs: ReadonlyFsClient): t.File => {
   const content = fs.readFileSync(path).toString();
   return parseFile(content);
 };

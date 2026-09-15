@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vite-plus/test";
 import {
+  buildYMergedPlane,
   splitSchematicByX,
   splitSchematicByY,
   splitSchematicByZ,
@@ -12,7 +13,7 @@ function makeChunk(
   pos: [number, number, number],
   fill: number,
 ): { pos: [number, number, number]; blocks: number[] } {
-  return { pos, blocks: new Array(CHUNK_SIZE ** 3).fill(fill) };
+  return { pos, blocks: new Array<number>(CHUNK_SIZE ** 3).fill(fill) };
 }
 
 function makeShortestSchema(
@@ -80,9 +81,7 @@ describe("splitSchematicByY with ShortestNormailzedSchema", () => {
     // the remaining 24*32 = 768 entries come from the right chunk.
     expect(blocks.slice(0, 256).every((v) => v === 1)).toBe(true);
     expect(blocks.slice(256, PLANE_SIZE).every((v) => v === 2)).toBe(true);
-    expect(
-      blocks.slice(PLANE_SIZE, PLANE_SIZE + 256).every((v) => v === 1),
-    ).toBe(true);
+    expect(blocks.slice(PLANE_SIZE, PLANE_SIZE + 256).every((v) => v === 1)).toBe(true);
   });
 
   it("does not include blockdatas or globalPosition in the output", () => {
@@ -93,6 +92,14 @@ describe("splitSchematicByY with ShortestNormailzedSchema", () => {
       expect("blockdatas" in out).toBe(false);
       expect("globalPosition" in out).toBe(false);
     }
+  });
+
+  it("zero-fills a missing source chunk without expanding the plane", () => {
+    const plane = buildYMergedPlane(undefined, makeChunk([0, 0, 0], 2), 0, 24, 8);
+
+    expect(plane).toHaveLength(PLANE_SIZE);
+    expect(plane.slice(0, 8 * CHUNK_SIZE).every((v) => v === 0)).toBe(true);
+    expect(plane.slice(8 * CHUNK_SIZE).every((v) => v === 2)).toBe(true);
   });
 });
 
@@ -111,9 +118,7 @@ describe("splitSchematicByZ with ShortestNormailzedSchema", () => {
     // and the remaining 24 entries come from the right chunk.
     expect(blocks.slice(0, 8).every((v) => v === 1)).toBe(true);
     expect(blocks.slice(8, CHUNK_SIZE).every((v) => v === 2)).toBe(true);
-    expect(
-      blocks.slice(CHUNK_SIZE, CHUNK_SIZE + 8).every((v) => v === 1),
-    ).toBe(true);
+    expect(blocks.slice(CHUNK_SIZE, CHUNK_SIZE + 8).every((v) => v === 1)).toBe(true);
   });
 
   it("does not include blockdatas or globalPosition in the output", () => {
@@ -130,18 +135,12 @@ describe("splitSchematicByZ with ShortestNormailzedSchema", () => {
 describe("splitSchematicByAxis with ShortestNormailzedSchema", () => {
   it("delegates to splitSchematicByX/Y/Z for each axis", () => {
     const schemX = makeShortestSchema("x", 1, 2);
-    expect(splitSchematicByAxis(schemX, 24, "x")).toStrictEqual(
-      splitSchematicByX(schemX, 24),
-    );
+    expect(splitSchematicByAxis(schemX, 24, "x")).toStrictEqual(splitSchematicByX(schemX, 24));
 
     const schemY = makeShortestSchema("y", 1, 2);
-    expect(splitSchematicByAxis(schemY, 24, "y")).toStrictEqual(
-      splitSchematicByY(schemY, 24),
-    );
+    expect(splitSchematicByAxis(schemY, 24, "y")).toStrictEqual(splitSchematicByY(schemY, 24));
 
     const schemZ = makeShortestSchema("z", 1, 2);
-    expect(splitSchematicByAxis(schemZ, 24, "z")).toStrictEqual(
-      splitSchematicByZ(schemZ, 24),
-    );
+    expect(splitSchematicByAxis(schemZ, 24, "z")).toStrictEqual(splitSchematicByZ(schemZ, 24));
   });
 });

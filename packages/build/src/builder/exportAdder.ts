@@ -10,9 +10,7 @@ import {
 import traverse from "@babel/traverse";
 import type { FileSystem } from "enhanced-resolve";
 
-export type ExportedMemberOfShouldReplace =
-  | { type: "part"; member: Set<string> }
-  | { type: "all" };
+export type ExportedMemberOfShouldReplace = { type: "part"; member: Set<string> } | { type: "all" };
 
 export const addGlobalThisExport = (
   ast: t.File,
@@ -39,12 +37,7 @@ export const addGlobalThisExport = (
       const source = node.source;
 
       if (declaration) {
-        handleDeclarationExport(
-          path,
-          declaration,
-          moduleKey,
-          shouldReplaceExport,
-        );
+        handleDeclarationExport(path, declaration, moduleKey, shouldReplaceExport);
         return;
       }
 
@@ -60,12 +53,7 @@ export const addGlobalThisExport = (
         fs,
         tsconfigPath,
       );
-      handleSourcedReExport(
-        path,
-        moduleKey,
-        targetModuleKey,
-        shouldReplaceExport,
-      );
+      handleSourcedReExport(path, moduleKey, targetModuleKey, shouldReplaceExport);
     },
     ExportAllDeclaration(path) {
       const targetModuleKey = resolveTargetModuleKey(
@@ -132,9 +120,7 @@ export const handleSourcedReExport = (
 
   assertNodeTypes(
     specifiers,
-    (node) =>
-      node.type === "ExportSpecifier" ||
-      node.type === "ExportNamespaceSpecifier",
+    (node) => node.type === "ExportSpecifier" || node.type === "ExportNamespaceSpecifier",
     "this builder is not support ExportDefaultSpecifier e.g. export a from 'b'",
   );
 
@@ -158,13 +144,10 @@ export const handleExportAll = (
 ) => {
   if (targetModuleKey == null) return;
   path.insertAfter(
-    t.callExpression(
-      t.memberExpression(t.identifier("Object"), t.identifier("assign"), false),
-      [
-        generateGlobalThisModuleMemberExpression(moduleKey),
-        generateGlobalThisModuleMemberExpression(targetModuleKey),
-      ],
-    ),
+    t.callExpression(t.memberExpression(t.identifier("Object"), t.identifier("assign"), false), [
+      generateGlobalThisModuleMemberExpression(moduleKey),
+      generateGlobalThisModuleMemberExpression(targetModuleKey),
+    ]),
   );
 };
 export const generateGlobalThisAssignmentExpressionsFromDeclaration = (
@@ -183,9 +166,7 @@ export const generateGlobalThisAssignmentExpressionsFromDeclaration = (
   const names = Object.keys(t.getBindingIdentifiers(declaration));
   return names
     .filter((name) => shouldExportFilter(name, shouldReplaceExport))
-    .map((name) =>
-      generateGlobalThisAssignmentExpressionFromNames(name, name, moduleKey),
-    );
+    .map((name) => generateGlobalThisAssignmentExpressionFromNames(name, name, moduleKey));
 };
 
 export const generateGlobalThisAssignmentExpressionsFromExportSpecifiers = (
@@ -213,11 +194,7 @@ export const generateGlobalThisAssignmentExpressionFromNames = (
     true,
   );
   const rightSideIdentifier = t.identifier(local);
-  return t.assignmentExpression(
-    "=",
-    leftSideMemberExpression,
-    rightSideIdentifier,
-  );
+  return t.assignmentExpression("=", leftSideMemberExpression, rightSideIdentifier);
 };
 
 export const generateGlobalThisAssignmentExpressionsFromReExportSpecifiers = (
@@ -243,30 +220,23 @@ export const generateGlobalThisAssignmentExpressionsFromReExportSpecifiers = (
   });
 };
 
-export const generateGlobalThisAssignmentExpressionForReExportNamespaceSpecifier =
-  (
-    exported: t.Identifier | t.StringLiteral,
-    localModuleKey: string,
-    exporterModuleKey: string,
-  ) => {
-    const leftSideMemberExpression = toComputedMemberExpression(
-      generateGlobalThisModuleMemberExpression(localModuleKey),
-      exported,
-    );
-    const rightSideIdentifier =
-      generateGlobalThisModuleMemberExpression(exporterModuleKey);
-    return t.assignmentExpression(
-      "=",
-      leftSideMemberExpression,
-      rightSideIdentifier,
-    );
-  };
+export const generateGlobalThisAssignmentExpressionForReExportNamespaceSpecifier = (
+  exported: t.Identifier | t.StringLiteral,
+  localModuleKey: string,
+  exporterModuleKey: string,
+) => {
+  const leftSideMemberExpression = toComputedMemberExpression(
+    generateGlobalThisModuleMemberExpression(localModuleKey),
+    exported,
+  );
+  const rightSideIdentifier = generateGlobalThisModuleMemberExpression(exporterModuleKey);
+  return t.assignmentExpression("=", leftSideMemberExpression, rightSideIdentifier);
+};
 
 const toComputedMemberExpression = (
   object: t.Expression,
   key: t.Identifier | t.StringLiteral,
-): t.MemberExpression =>
-  t.memberExpression(object, key, t.isStringLiteral(key));
+): t.MemberExpression => t.memberExpression(object, key, t.isStringLiteral(key));
 
 const generateGlobalThisAssignmentExpression = (
   exported: t.Identifier | t.StringLiteral,
@@ -275,15 +245,11 @@ const generateGlobalThisAssignmentExpression = (
 ): t.AssignmentExpression =>
   t.assignmentExpression(
     "=",
-    toComputedMemberExpression(
-      generateGlobalThisModuleMemberExpression(moduleKey),
-      exported,
-    ),
+    toComputedMemberExpression(generateGlobalThisModuleMemberExpression(moduleKey), exported),
     rightSide,
   );
 
 const shouldExportFilter = (
   name: string,
   shouldReplaceExport: ExportedMemberOfShouldReplace,
-): boolean =>
-  shouldReplaceExport.type === "all" || shouldReplaceExport.member.has(name);
+): boolean => shouldReplaceExport.type === "all" || shouldReplaceExport.member.has(name);

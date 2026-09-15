@@ -10,13 +10,11 @@ export default {
     messages: {
       nonUseAsyncArrowFunction:
         "Do not use async arrow function. use normal arrow function instead",
-      nonUseAsyncFunction:
-        "Do not use async function. use normal function instead",
+      nonUseAsyncFunction: "Do not use async function. use normal function instead",
       nonUseAsyncGeneratorFunction:
         "Do not use async generator function. use normal generator function instead",
       nonUseAsyncMethod: "Do not use async method. use normal method instead",
-      nonUseAsyncClassMethod:
-        "Do not use async class method. use normal method instead",
+      nonUseAsyncClassMethod: "Do not use async class method. use normal method instead",
     },
     schema: [],
     fixable: "code",
@@ -32,16 +30,10 @@ export default {
               messageId: "nonUseAsyncGeneratorFunction",
               node,
               fix(fixer) {
-                const asyncToken = context.sourceCode.getFirstToken(
-                  node,
-                  asyncFilter,
-                )!;
+                const asyncToken = context.sourceCode.getFirstToken(node, asyncFilter)!;
                 const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
-                return fixer.replaceTextRange(
-                  [asyncToken.range[0], nextToken.range[0]],
-                  "",
-                );
+                return fixer.replaceTextRange([asyncToken.range[0], nextToken.range[0]], "");
               },
             });
           } else {
@@ -49,16 +41,10 @@ export default {
               messageId: "nonUseAsyncFunction",
               node,
               fix(fixer) {
-                const asyncToken = context.sourceCode.getFirstToken(
-                  node,
-                  asyncFilter,
-                )!;
+                const asyncToken = context.sourceCode.getFirstToken(node, asyncFilter)!;
                 const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
-                return fixer.replaceTextRange(
-                  [asyncToken.range[0], nextToken.range[0]],
-                  "",
-                );
+                return fixer.replaceTextRange([asyncToken.range[0], nextToken.range[0]], "");
               },
             });
           }
@@ -70,16 +56,10 @@ export default {
             messageId: "nonUseAsyncArrowFunction",
             node,
             fix(fixer) {
-              const asyncToken = context.sourceCode.getFirstToken(
-                node,
-                asyncFilter,
-              )!;
+              const asyncToken = context.sourceCode.getFirstToken(node, asyncFilter)!;
               const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
-              return fixer.replaceTextRange(
-                [asyncToken.range[0], nextToken.range[0]],
-                "",
-              );
+              return fixer.replaceTextRange([asyncToken.range[0], nextToken.range[0]], "");
             },
           });
         }
@@ -89,24 +69,15 @@ export default {
         if (node.parent.type === AST_NODE_TYPES.MethodDefinition) {
           return;
         }
-        if (
-          node.parent.type === AST_NODE_TYPES.Property &&
-          node.parent.method
-        ) {
+        if (node.parent.type === AST_NODE_TYPES.Property && node.parent.method) {
           context.report({
             messageId: "nonUseAsyncMethod",
             node,
             fix(fixer) {
-              const asyncToken = context.sourceCode.getFirstToken(
-                node.parent,
-                asyncFilter,
-              )!;
+              const asyncToken = context.sourceCode.getFirstToken(node.parent, asyncFilter)!;
               const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
-              return fixer.replaceTextRange(
-                [asyncToken.range[0], nextToken.range[0]],
-                "",
-              );
+              return fixer.replaceTextRange([asyncToken.range[0], nextToken.range[0]], "");
             },
           });
           return;
@@ -115,16 +86,10 @@ export default {
           messageId: "nonUseAsyncFunction",
           node,
           fix(fixer) {
-            const asyncToken = context.sourceCode.getFirstToken(
-              node,
-              asyncFilter,
-            )!;
+            const asyncToken = context.sourceCode.getFirstToken(node, asyncFilter)!;
             const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
-            return fixer.replaceTextRange(
-              [asyncToken.range[0], nextToken.range[0]],
-              "",
-            );
+            return fixer.replaceTextRange([asyncToken.range[0], nextToken.range[0]], "");
           },
         });
       },
@@ -136,15 +101,9 @@ export default {
             messageId: "nonUseAsyncClassMethod",
             node,
             fix(fixer) {
-              const asyncToken = context.sourceCode.getFirstToken(
-                node,
-                asyncFilter,
-              )!;
+              const asyncToken = context.sourceCode.getFirstToken(node, asyncFilter)!;
               const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
-              return fixer.replaceTextRange(
-                [asyncToken.range[0], nextToken.range[0]],
-                "",
-              );
+              return fixer.replaceTextRange([asyncToken.range[0], nextToken.range[0]], "");
             },
           });
           return;
@@ -153,16 +112,10 @@ export default {
           messageId: "nonUseAsyncClassMethod",
           node,
           fix(fixer) {
-            const asyncToken = context.sourceCode.getFirstToken(
-              node,
-              asyncFilter,
-            )!;
+            const asyncToken = context.sourceCode.getFirstToken(node, asyncFilter)!;
             const nextToken = context.sourceCode.getTokenAfter(asyncToken)!;
 
-            return fixer.replaceTextRange(
-              [asyncToken.range[0], nextToken.range[0]],
-              "",
-            );
+            return fixer.replaceTextRange([asyncToken.range[0], nextToken.range[0]], "");
           },
         });
       },
